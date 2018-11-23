@@ -67,12 +67,30 @@ header
 	&.on-grid
 		background-color: yellow
 		cursor: pointer
+		.buttons
+			display: block
 	&.rotated .tile
 		display: block
-	&::after
-		content: ' '
-		display: block
-		
+	.buttons
+		display: none
+		position: absolute
+		left: 50%
+		transform: translate(-50%, -125%)
+		z-index: 6
+		white-space: nowrap
+		.rotate, .place
+			display: inline-block
+			width: 7em
+			height: 7em
+			border-radius: 15%
+			border: 1em solid #666
+			&:hover
+				border: 1em solid #999
+		.rotate
+			background-color: yellow
+			margin-right: 1em
+		.place
+			background-color: lime
 
 .tile
 	position: relative

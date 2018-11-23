@@ -10,7 +10,7 @@ let boardTiles = [];
 const words = [
 	'awesome',
 	'bad',
-	'bitchin',
+	/*'bitchin',
 	'cool',
 	'epic',
 	'gnarly',
@@ -18,7 +18,7 @@ const words = [
 	'righteous',
 	'sick',
 	'tubular',
-	'wicked',
+	'wicked',*/
 ];
 
 document.on('DOMContentLoaded', (e) => {
@@ -64,10 +64,10 @@ document.on('DOMContentLoaded', (e) => {
 		// Resize the board
 		let navHeight = 5;
 		let tileSize = boardWidth / boardSize;
-		let size = Math.min(
-			window.innerWidth / (boardSize + 0) / tileSize,
-			window.innerHeight / (navHeight + boardSize + 0) / tileSize
-		);
+		let size = Math.floor(Math.min(
+			window.innerWidth / (boardSize) / tileSize,
+			window.innerHeight / (navHeight + boardSize) / tileSize
+		));
 		document.body.style.fontSize = `${size}px`;
 		
 		// Update each tile's position
@@ -188,11 +188,21 @@ let endWordDrag = (word) => {
 };
 
 const onmousedown = function(e) {
-	beginWordDrag(this, e.clientX, e.clientY);
+	if (this === e.target)
+		beginWordDrag(this, e.clientX, e.clientY);
 };
 
 let addWord = (word) => {
-	let wordElem = $new('.word').on('mousedown', onmousedown).element();
+	let wordElem =
+		$new('.word')
+			.child(
+				$new('.buttons').children(
+					$new('.rotate'),
+					$new('.place')
+				)
+			)
+			.on('mousedown', onmousedown)
+			.element();
 	wordElem.letters = [];
 	wordElem.pos = { x: 0, y: 0 };
 	wordsHolderElem.append(wordElem);
