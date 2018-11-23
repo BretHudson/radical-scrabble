@@ -48,30 +48,38 @@ document.on('DOMContentLoaded', (e) => {
 		boardElem.append(tile);
 	}
 	
-	window.on('mousedown', function(e) {
-		if (e.target.hasClass('horizontal')) {
+	let dragBegin = (e, e2) => {
+		if (e.target.hasClass('button')) {
+			e.preventDefault();
 			let word = e.target.parentElement.parentElement;
-			beginWordDrag(word, e.clientX, e.clientY);
+			if (e.target.hasClass('vertical'))
+				word.toggleClass('rotated');
+			beginWordDrag(word, e2.clientX, e2.clientY);
 		}
-		
-		if (e.target.hasClass('vertical')) {
-			let word = e.target.parentElement.parentElement;
-			word.toggleClass('rotated');
-			beginWordDrag(word, e.clientX, e.clientY);
-		}
-	});
+	};
 	
-	window.on('mousemove', function(e) {
+	window.on('mousedown', (e) => { dragBegin(e, e); });
+	window.on('touchstart', (e) => { dragBegin(e, e.touches[0]); }, { passive: false });
+	
+	let dragProgress = (e, e2) => {
 		if (dragWord !== null) {
-			onWordDrag(dragWord, e.clientX, e.clientY);
+			e.preventDefault();
+			console.log('what');
+			onWordDrag(dragWord, e2.clientX, e2.clientY);
 		}
-	});
+	};
 	
-	window.on('mouseup', function(e) {
+	window.on('mousemove', (e) => { dragProgress(e, e); });
+	window.on('touchmove', (e) => { dragProgress(e, e.touches[0]); }, { passive: false });
+	
+	let dragEnd = () => {
 		if (dragWord !== null) {
 			endWordDrag(dragWord);
 		}
-	});
+	}
+	
+	window.on('mouseup', dragEnd);
+	window.on('touchend', dragEnd);
 	
 	const resize = () => {
 		// Resize the board
@@ -213,8 +221,8 @@ let addWord = (word) => {
 	let wordElem =
 		$new('.word')
 			.child($new('.buttons').children(
-				$new('.horizontal'),
-				$new('.vertical')
+				$new('.button.horizontal'),
+				$new('.button.vertical')
 			))
 			.element();
 	wordElem.letters = [];
