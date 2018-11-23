@@ -46,10 +46,15 @@ header
 		box-sizing: content-box
 		margin-left: -1.5em
 		.word
-			display: inline-block
-			cursor: move
-			line-height: 1em
 			margin: 3em
+
+.word
+	display: inline-block
+	cursor: move
+	line-height: 1em
+	&.drag
+		position: absolute
+		z-index: 5
 
 .tile
 	position: relative
