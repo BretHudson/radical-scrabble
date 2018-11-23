@@ -54,22 +54,33 @@ document.on('DOMContentLoaded', (e) => {
 			
 			setWordPos(dragWord, dragPos.x - dragStartPos.x, dragPos.y - dragStartPos.y);
 			
+			dragWord.q('.tile').each(letter => {
+				letter.tileHovering = null;
+			});
+			
 			let x, y;
 			boardElem.q('.tile').each(tile => {
-				tile.removeClass('test');
+				tile.removeClass('word-hovering');
 				dragWord.q('.tile').each(letter => {
 					x = letter.center.x + dragPos.x;
 					y = letter.center.y + dragPos.y;
-					if (overlapTile(tile, x, y))
-						tile.addClass('test');
+					if (overlapTile(tile, x, y)) {
+						letter.tileHovering = tile;
+						tile.addClass('word-hovering');
+					}
 				});
 			});
 		}
 	});
 	
 	window.on('mouseup', function(e) {
-		if (dragWord !== null)
+		if (dragWord !== null) {
 			endWordDrag(dragWord);
+		}
+		
+		boardElem.q('.tile').each(tile => {
+			tile.removeClass('word-hovering');
+		});
 	});
 	
 	const resize = () => {
@@ -143,10 +154,28 @@ let beginWordDrag = (word, mx, my) => {
 	dragWord = word;
 };
 
+let snapToTile = (word) => {
+	let firstTile, valid = true;
+	word.q('.tile').each(letter => {
+		valid &= !!(firstTile = letter.tileHovering);
+	});
+	
+	if (valid) {
+		word.pos.x = word.pos.y = 0;
+		setWordPos(word, firstTile.pos.x, firstTile.pos.y);
+	}
+	
+	return valid;
+};
+
 let endWordDrag = (word) => {
 	console.log('end drag');
-	wordsHolderElem.append(word);
-	word.removeClass('drag');
+	
+	if (!snapToTile(word)) {
+		wordsHolderElem.append(word);
+		word.removeClass('drag');
+	}
+	
 	dragWord = null;
 };
 

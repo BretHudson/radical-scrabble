@@ -13,6 +13,7 @@ body
 	margin: 0
 	background-color: c_bg
 	color: white
+	overflow: hidden
 	font-size: 0 // NOTE(bret): Set to 0 so we don't get any odd zooming on mobile on page load (trust me here, remove it and watch everything fall apart)
 
 absoluteCenter()
@@ -23,6 +24,9 @@ absoluteCenter()
 
 header
 	text-align: center
+
+.board, .words
+	top: 0
 
 .board
 	position: absolute
@@ -47,14 +51,18 @@ header
 		margin-left: -1.5em
 		.word
 			margin: 3em
+			cursor: grab
 
 .word
 	display: inline-block
-	cursor: move
 	line-height: 1em
+	cursor: pointer
 	&.drag
 		position: absolute
 		z-index: 5
+		cursor: grabbing
+	&.rotated .tile
+		display: block
 
 .tile
 	position: relative
@@ -69,9 +77,13 @@ header
 		background-color: white
 		background-color: #333
 		opacity: 0.3
+		.word-hovering&
+			background-color: green
 		.has-letter&
 			background-color: #deb887
 			opacity: 0.7
+			.word-hovering&
+				background-color: red
 		.test&
 			background-color: purple
 	.letter
