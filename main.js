@@ -5,10 +5,11 @@ const IS_TOUCH_DEVICE = !!(('ontouchstart' in window) ||
 let style = $new('style[type=text/css]').element();
 let boardElem, wordsHolderElem;
 
+let boardTiles = [];
+
 const words = [
 	'awesome',
 	'bad',
-	/*
 	'bitchin',
 	'cool',
 	'epic',
@@ -18,7 +19,6 @@ const words = [
 	'sick',
 	'tubular',
 	'wicked',
-	*/
 ];
 
 document.on('DOMContentLoaded', (e) => {
@@ -44,33 +44,13 @@ document.on('DOMContentLoaded', (e) => {
 	
 	for (let t = 0; t < numTiles; ++t) {
 		let tile = createTile();
+		boardTiles.push(tile);
 		boardElem.append(tile);
 	}
 	
 	window.on('mousemove', function(e) {
 		if (dragWord !== null) {
-			console.log(dragID + '\tdrag/move');
-			dragPos.x = e.clientX;
-			dragPos.y = e.clientY;
-			
-			setWordPos(dragWord, dragPos.x - dragStartPos.x, dragPos.y - dragStartPos.y);
-			
-			dragWord.q('.tile').each(letter => {
-				letter.tileHovering = null;
-			});
-			
-			let x, y;
-			boardElem.q('.tile').each(tile => {
-				tile.removeClass('word-hovering');
-				dragWord.q('.tile').each(letter => {
-					x = letter.center.x + dragPos.x;
-					y = letter.center.y + dragPos.y;
-					if (overlapTile(tile, x, y)) {
-						letter.tileHovering = tile;
-						tile.addClass('word-hovering');
-					}
-				});
-			});
+			onWordDrag(dragWord, e.clientX, e.clientY);
 		}
 	});
 	
@@ -78,10 +58,6 @@ document.on('DOMContentLoaded', (e) => {
 		if (dragWord !== null) {
 			endWordDrag(dragWord);
 		}
-		
-		boardElem.q('.tile').each(tile => {
-			tile.removeClass('word-hovering');
-		});
 	});
 	
 	const resize = () => {
@@ -112,7 +88,7 @@ let createTile = (letter) => {
 	return $new('.tile' + ((letter) ? '.has-letter' : '')).children(
 		$new('.background'),
 		$new('.letter').attr('data-letter', letter || '')
-	);
+	).element();
 };
 
 let overlapTile = (tile, x, y) => {
@@ -128,83 +104,103 @@ let setWordPos = (word, x, y, before = null, execIfNull = false) => {
 	});
 };
 
-let dragID = 0;
-let dragStartPos = { x: 0, y: 0 };
-let dragPos = { x: 0, y: 0 };
-let dragWord = null;
-let beginWordDrag = (word, mx, my) => {
-	console.log(dragID + '\tbegin draga');
-	
-	word.removeClass('on-grid');
-	
-	dragStartPos.x = dragPos.x = mx;
-	dragStartPos.y = dragPos.y = my;
-	
-	//window.requestAnimationFrame(() => {
-		let rect = word.getBoundingClientRect();
-		word.pos = { x: rect.x, y: rect.y };
-		word.q('.tile').each(tile => {
-			rect = tile.getBoundingClientRect();
-			tile.center = {
-				x: rect.x + (rect.width / 2) - mx,
-				y: rect.y + (rect.height / 2) - my
-			};
-			console.log(tile.center);
-		});
-		setWordPos(word, 0, 0, () => {
-			document.body.append(word);
-			word.addClass('drag');
-		});
-		dragWord = word;
-	//});
-};
-
 let snapToTile = (word) => {
-	let firstTile, valid = true;
-	word.q('.tile').each(letter => {
-		valid &= !!(firstTile = letter.tileHovering);
-	});
+	let valid = word.letters.reduce((valid, letter) => valid & (letter.tileHovering !== null), true);
 	
 	if (valid) {
 		word.pos.x = word.pos.y = 0;
+		let firstTile = word.letters[0].tileHovering;
 		setWordPos(word, firstTile.pos.x, firstTile.pos.y, null, true);
 	}
 	
 	return valid;
 };
 
+let dragStartPos = { x: 0, y: 0 };
+let dragPos = { x: 0, y: 0 };
+let dragWord = null;
+let beginWordDrag = (word, mx, my) => {
+	word.removeClass('on-grid');
+	
+	dragStartPos.x = dragPos.x = mx;
+	dragStartPos.y = dragPos.y = my;
+	
+	window.requestAnimationFrame(() => {
+		let rect = word.getBoundingClientRect();
+		word.pos.x = rect.x;
+		word.pos.y = rect.y;
+		rect.width /= word.letters.length;
+		word.letters.forEach((letter, index) => {
+			rect.x = word.pos.x + (index * rect.width);
+			letter.center.x = rect.x + (rect.width / 2) - mx;
+			letter.center.y = rect.y + (rect.height / 2) - my;
+		});
+		setWordPos(word, 0, 0, () => {
+			document.body.append(word);
+			word.addClass('drag');
+		});
+		dragWord = word;
+	});
+};
+
+let onWordDrag = (word, mx, my) => {
+	dragPos.x = mx;
+	dragPos.y = my;
+	
+	setWordPos(word, dragPos.x - dragStartPos.x, dragPos.y - dragStartPos.y);
+	
+	word.letters.forEach(letter => {
+		letter.tileHovering = null;
+	});
+	
+	let x, y;
+	boardTiles.forEach(tile => {
+		tile.removeClass('word-hovering');
+		word.letters.forEach(letter => {
+			x = letter.center.x + dragPos.x;
+			y = letter.center.y + dragPos.y;
+			if (overlapTile(tile, x, y)) {
+				letter.tileHovering = tile;
+				tile.addClass('word-hovering');
+			}
+		});
+	});
+};
+
 let endWordDrag = (word) => {
-	console.group(dragID++ + '\tend drag ');
-	
-	
 	if (snapToTile(word)) {
-		console.log('snapped!');
 		word.addClass('on-grid');
+		word.removeClass('drag');
 	} else {
-		console.log('returned to hand');
 		window.requestAnimationFrame(() => {
 			wordsHolderElem.append(word);
 			word.style.left = null;
 			word.style.top = null;
+			word.removeClass('drag');
 		});
 	}
 	
-	window.requestAnimationFrame(() => {
-		word.removeClass('drag');
-		console.log(dragWord);
-	});
 	dragWord = null;
 	
-	console.groupEnd('end drag');
+	boardTiles.forEach(tile => {
+		tile.removeClass('word-hovering');
+	});
+};
+
+const onmousedown = function(e) {
+	beginWordDrag(this, e.clientX, e.clientY);
 };
 
 let addWord = (word) => {
-	let wordElem =
-		$new('.word')
-			.on('mousedown', function(e) {
-				beginWordDrag(this, e.clientX, e.clientY);
-			});
-	wordsHolderElem.append(word.split('').reduce((wordElem, letter) => {
-		return wordElem.child(createTile(letter));
-	}, wordElem));
+	let wordElem = $new('.word').on('mousedown', onmousedown).element();
+	wordElem.letters = [];
+	wordElem.pos = { x: 0, y: 0 };
+	wordsHolderElem.append(wordElem);
+	
+	word.split('').forEach(letter => {
+		letter = createTile(letter);
+		letter.center = { x: 0, y: 0 };
+		wordElem.letters.push(letter);
+		wordElem.append(letter);
+	});
 };
