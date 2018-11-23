@@ -69,12 +69,14 @@ header
 		background-color: white
 		background-color: #333
 		opacity: 0.3
-		^[0].has-letter ^[1..-1]
+		.has-letter&
 			background-color: #deb887
 			opacity: 0.7
+		.test&
+			background-color: purple
 	.letter
 		absoluteCenter()
-		font-size: 4em
+		font-size: 3.8em
 		text-transform: uppercase
 		&::after
 			content: attr(data-letter)
