@@ -55,48 +55,43 @@ header
 
 .word
 	position: relative
-	display: inline-block
+	display: block
+	// NOTE(bret): A hack to prevent the block from having 100% width
+	float: left
+	clear: left
 	line-height: 1em
 	.tile
 		pointer-events: none
 	&.drag, &.on-grid
 		position: absolute
 		z-index: 5
+		.buttons
+			display: none
 	&.drag
 		cursor: grabbing
 	&.on-grid
 		cursor: pointer
-		.buttons
-			display: block
 	&.rotated .tile
 		display: block
 	.buttons
-		display: none
 		position: absolute
-		left: 50%
+		right: 0
 		top: 50%
-		transform: translate(-50%, 50%)
+		transform: translate(100%, -50%)
 		z-index: 6
 		white-space: nowrap
-		.rotated&
-			transform: translate(50%, -50%)
-		.rotate, .place
+		.horizontal, .vertical
 			display: inline-block
-			.rotated&
-				display: block
-			width: 7em
-			height: 7em
+			width: 10em
+			height: 10em
 			border-radius: 15%
+			margin-left: 1em
 			border: 1em solid #666
 			&:hover
 				border: 1em solid #999
-		.rotate
+		.horizontal
 			background-color: yellow
-			margin-right: 1em
-			.rotated&
-				margin-right: 0
-				margin-bottom: 1em
-		.place
+		.vertical
 			background-color: lime
 
 .tile

@@ -8,17 +8,17 @@ let boardElem, wordsHolderElem;
 let boardTiles = [];
 
 const words = [
+	'righteous',
 	'awesome',
 	'bad',
-	/*'bitchin',
+	'bitchin',
 	'cool',
 	'epic',
 	'gnarly',
 	'radical',
-	'righteous',
 	'sick',
 	'tubular',
-	'wicked',*/
+	'wicked',
 ];
 
 document.on('DOMContentLoaded', (e) => {
@@ -49,13 +49,16 @@ document.on('DOMContentLoaded', (e) => {
 	}
 	
 	window.on('mousedown', function(e) {
-		if (e.target.hasClass('rotate')) {
+		if (e.target.hasClass('horizontal')) {
+			let word = e.target.parentElement.parentElement;
+			beginWordDrag(word, e.clientX, e.clientY);
+		}
+		
+		if (e.target.hasClass('vertical')) {
 			let word = e.target.parentElement.parentElement;
 			word.toggleClass('rotated');
 			beginWordDrag(word, e.clientX, e.clientY);
 		}
-		if (e.target.hasClass('word'))
-			beginWordDrag(e.target, e.clientX, e.clientY);
 	});
 	
 	window.on('mousemove', function(e) {
@@ -208,8 +211,8 @@ let addWord = (word) => {
 	let wordElem =
 		$new('.word')
 			.child($new('.buttons').children(
-				$new('.rotate'),
-				$new('.place')
+				$new('.horizontal'),
+				$new('.vertical')
 			))
 			.element();
 	wordElem.letters = [];
