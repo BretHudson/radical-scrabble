@@ -49,6 +49,11 @@ document.on('DOMContentLoaded', (e) => {
 	}
 	
 	window.on('mousedown', function(e) {
+		if (e.target.hasClass('rotate')) {
+			let word = e.target.parentElement.parentElement;
+			word.toggleClass('rotated');
+			beginWordDrag(word, e.clientX, e.clientY);
+		}
 		if (e.target.hasClass('word'))
 			beginWordDrag(e.target, e.clientX, e.clientY);
 	});
@@ -134,9 +139,15 @@ let beginWordDrag = (word, mx, my) => {
 		let rect = word.getBoundingClientRect();
 		word.pos.x = rect.x;
 		word.pos.y = rect.y;
-		rect.width /= word.letters.length;
+		if (word.hasClass('rotated'))
+			rect.height /= word.letters.length;
+		else
+			rect.width /= word.letters.length;
 		word.letters.forEach((letter, index) => {
-			rect.x = word.pos.x + (index * rect.width);
+			if (word.hasClass('rotated'))
+				rect.y = word.pos.y + (index * rect.height);
+			else
+				rect.x = word.pos.x + (index * rect.width);
 			letter.center.x = rect.x + (rect.width / 2) - mx;
 			letter.center.y = rect.y + (rect.height / 2) - my;
 		});
@@ -182,6 +193,7 @@ let endWordDrag = (word) => {
 			word.style.left = null;
 			word.style.top = null;
 			word.removeClass('drag');
+			word.removeClass('rotated');
 		});
 	}
 	

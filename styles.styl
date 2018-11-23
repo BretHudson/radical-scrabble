@@ -74,11 +74,16 @@ header
 		display: none
 		position: absolute
 		left: 50%
-		transform: translate(-50%, -125%)
+		top: 50%
+		transform: translate(-50%, 50%)
 		z-index: 6
 		white-space: nowrap
+		.rotated&
+			transform: translate(50%, -50%)
 		.rotate, .place
 			display: inline-block
+			.rotated&
+				display: block
 			width: 7em
 			height: 7em
 			border-radius: 15%
@@ -88,6 +93,9 @@ header
 		.rotate
 			background-color: yellow
 			margin-right: 1em
+			.rotated&
+				margin-right: 0
+				margin-bottom: 1em
 		.place
 			background-color: lime
 
