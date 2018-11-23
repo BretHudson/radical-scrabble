@@ -51,7 +51,6 @@ header
 		margin-left: -1.5em
 		.word
 			margin: 3em
-			cursor: grab
 
 .word
 	position: relative
@@ -67,10 +66,6 @@ header
 		z-index: 5
 		.buttons
 			display: none
-	&.drag
-		cursor: grabbing
-	&.on-grid
-		cursor: pointer
 	&.rotated .tile
 		display: block
 	.buttons
@@ -81,18 +76,27 @@ header
 		z-index: 6
 		white-space: nowrap
 		.horizontal, .vertical
+			position: relative
 			display: inline-block
-			width: 10em
 			height: 10em
-			border-radius: 15%
-			margin-left: 1em
-			border: 1em solid #666
-			&:hover
-				border: 1em solid #999
+			margin: 0 0.5em
+			cursor: grab
+			&::after
+				content: ''
+				width: 100%
+				display: block
+				position: relative
+				border-radius: 1.2em
+				background-color: #fafafa
 		.horizontal
-			background-color: yellow
+			width: 10em
+			&::after
+				height: 50%
+				top: 25%
 		.vertical
-			background-color: lime
+			width: 5em
+			&::after
+				height: 100%
 
 .tile
 	position: relative
