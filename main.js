@@ -140,19 +140,21 @@ let beginWordDrag = (word, mx, my) => {
 	
 	window.requestAnimationFrame(() => {
 		let rect = word.getBoundingClientRect();
-		word.pos.x = rect.x;
-		word.pos.y = rect.y;
 		if (word.hasClass('rotated'))
 			rect.height /= word.letters.length;
 		else
 			rect.width /= word.letters.length;
+		word.pos.x = mx - rect.width;
+		word.pos.y = my - rect.height;
 		word.letters.forEach((letter, index) => {
+			let xx = word.pos.x;
+			let yy = word.pos.y;
 			if (word.hasClass('rotated'))
-				rect.y = word.pos.y + (index * rect.height);
+				yy += (index * rect.height);
 			else
-				rect.x = word.pos.x + (index * rect.width);
-			letter.center.x = rect.x + (rect.width / 2) - mx;
-			letter.center.y = rect.y + (rect.height / 2) - my;
+				xx += (index * rect.width);
+			letter.center.x = xx + (rect.width / 2) - mx;
+			letter.center.y = yy + (rect.height / 2) - my;
 		});
 		setWordPos(word, 0, 0, () => {
 			document.body.append(word);
