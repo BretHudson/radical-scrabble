@@ -12,17 +12,27 @@ body
 	color: white
 	font-size: 0 // NOTE(bret): Set to 0 so we don't get any odd zooming on mobile on page load (trust me here, remove it and watch everything fall apart)
 
+absoluteCenter()
+	position: absolute
+	left: 50%
+	top: 50%
+	transform: translate(-50%, -50%)
+
 header
 	text-align: center
 
-#board
+#board, #words
 	position: absolute
 	line-height: 0
+
+#words
+	background-color: #8b6914
+	.word
+		line-height: 1em
 
 .tile
 	position: relative
 	display: inline-block
-	background-color: blue
 	.background
 		position: absolute
 		left: 5%
@@ -30,4 +40,14 @@ header
 		width: 90%
 		height: 90%
 		border-radius: 15%
-		background-color: rgba(white, 0.3)
+		background-color: white
+		opacity: 0.3
+		^[0].has-letter ^[1..-1]
+			background-color: #deb887
+			opacity: 0.7
+	.letter
+		absoluteCenter()
+		font-size: 4em
+		text-transform: uppercase
+		&::after
+			content: attr(data-letter)

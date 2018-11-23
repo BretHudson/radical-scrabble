@@ -3,11 +3,13 @@ const IS_TOUCH_DEVICE = !!(('ontouchstart' in window) ||
 	window.DocumentTouch && document instanceof DocumentTouch);
 
 let style = $new('style[type=text/css]').element();
+let boardElem, wordsElem;
 
 document.on('DOMContentLoaded', (e) => {
 	document.head[0].append(style);
 	
-	let boardElem = document.q('#board');
+	boardElem = document.q('#board');
+	wordsElem = document.q('#words');
 	
 	let boardSize = 15;
 	let numTiles = boardSize * boardSize;
@@ -15,14 +17,19 @@ document.on('DOMContentLoaded', (e) => {
 	let boardWidth = 100, boardHalfWidth = boardWidth / 2;
 	boardElem.style.width = `${boardWidth}em`;
 	boardElem.style.left = `calc(50% - ${boardHalfWidth}em)`;
-	let tileSize = boardWidth / boardSize;
 	
+	wordsElem.style.width = `${boardWidth}em`;
+	wordsElem.style.left = `calc(50% - ${boardHalfWidth}em)`;
+	wordsElem.style.top = `${boardWidth}em`;
+	
+	let tileSize = boardWidth / boardSize;
 	style.textContent = `.tile { width: ${tileSize}em; height: ${tileSize}em; }`;
 	
 	for (let t = 0; t < numTiles; ++t) {
 		let tile =
 			$new('.tile').children(
-				$new('.background')
+				$new('.background'),
+				$new('.letter').attr('data-letter', 'a')
 			);
 		boardElem.append(tile);
 	}
@@ -34,7 +41,6 @@ document.on('DOMContentLoaded', (e) => {
 			window.innerHeight / (navHeight + boardSize + 0) / tileSize
 		);
 		document.body.style.fontSize = `${size}px`;
-		console.log(window.innerWidth);
 	};
 	
 	window.on('resize', resize);
