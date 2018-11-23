@@ -54,15 +54,23 @@ header
 			cursor: grab
 
 .word
+	position: relative
 	display: inline-block
 	line-height: 1em
-	cursor: pointer
-	&.drag
+	&.drag, &.on-grid
 		position: absolute
 		z-index: 5
+	&.drag
 		cursor: grabbing
+	&.on-grid
+		background-color: yellow
+		cursor: pointer
 	&.rotated .tile
 		display: block
+	&::after
+		content: ' '
+		display: block
+		
 
 .tile
 	position: relative
