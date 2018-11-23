@@ -10,7 +10,24 @@ body
 	margin: 0
 	background-color: c_black
 	color: white
+	font-size: 0 // NOTE(bret): Set to 0 so we don't get any odd zooming on mobile on page load (trust me here, remove it and watch everything fall apart)
 
 header
 	text-align: center
-	font-size: 5rem
+
+#board
+	position: absolute
+	line-height: 0
+
+.tile
+	position: relative
+	display: inline-block
+	background-color: blue
+	.background
+		position: absolute
+		left: 5%
+		top: 5%
+		width: 90%
+		height: 90%
+		border-radius: 15%
+		background-color: rgba(white, 0.3)
