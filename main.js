@@ -48,6 +48,11 @@ document.on('DOMContentLoaded', (e) => {
 		boardElem.append(tile);
 	}
 	
+	window.on('mousedown', function(e) {
+		if (e.target.hasClass('word'))
+			beginWordDrag(e.target, e.clientX, e.clientY);
+	});
+	
 	window.on('mousemove', function(e) {
 		if (dragWord !== null) {
 			onWordDrag(dragWord, e.clientX, e.clientY);
@@ -187,21 +192,13 @@ let endWordDrag = (word) => {
 	});
 };
 
-const onmousedown = function(e) {
-	if (this === e.target)
-		beginWordDrag(this, e.clientX, e.clientY);
-};
-
 let addWord = (word) => {
 	let wordElem =
 		$new('.word')
-			.child(
-				$new('.buttons').children(
-					$new('.rotate'),
-					$new('.place')
-				)
-			)
-			.on('mousedown', onmousedown)
+			.child($new('.buttons').children(
+				$new('.rotate'),
+				$new('.place')
+			))
 			.element();
 	wordElem.letters = [];
 	wordElem.pos = { x: 0, y: 0 };
