@@ -39,8 +39,9 @@ document.on('DOMContentLoaded', (e) => {
 	boardElem.style.width = `${boardWidth}em`;
 	boardElem.style.left = `calc(50% - ${boardHalfWidth}em)`;
 	
-	wordsElem.style.paddingTop = `${boardWidth}em`;
+	wordsElem.style.top = `${boardWidth}em`;
 	wordsElem.style.width = `${boardWidth}em`;
+	wordsElem.style.height = `calc(100% - ${boardWidth}em)`;
 	wordsElem.style.left = `calc(50% - ${boardHalfWidth}em)`;
 	
 	let tileSize = (boardWidth - 3) / boardSize; // NOTE(bret): for that 1.5em padding yo
