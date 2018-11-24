@@ -141,17 +141,8 @@ let overlapTile = (tile, x, y) => {
 	return (x >= tile.pos.left) && (x < tile.pos.right) && (y >= tile.pos.top) && (y < tile.pos.bottom);
 };
 
-const TILE_STATE = {
-	WILD: 0,
-	EMPTY: 1,
-	LETTER: 2
-};
-let getTileState = (letter, tile) => {
-	if (tile.dataset.type === 'wild')
-		return TILE_STATE.WILD;
-	if (tile.dataset.letter === '')
-		return TILE_STATE.EMPTY;
-	return TILE_STATE.LETTER;
+let doesTileHasLetter = (letter, tile) => {
+	return (tile.dataset.letter !== '');
 };
 
 let setWordPos = (word, x, y, before = null, execIfNull = false) => {
@@ -164,7 +155,7 @@ let setWordPos = (word, x, y, before = null, execIfNull = false) => {
 };
 
 let snapToTile = (word) => {
-	let valid = word.letters.reduce((valid, letter) => valid & (letter.tileHovering !== null), true);
+	let valid = dragWordValidPlacement;//word.letters.reduce((valid, letter) => valid & (letter.tileHovering !== null), true);
 	
 	if (valid) {
 		word.pos.x = word.pos.y = 0;
@@ -250,6 +241,8 @@ let onWordDrag = (word, mx, my) => {
 	
 	let x, y;
 	let overlappedTiles = [];
+	let hasWild = false;
+	let hasLetter = false;
 	for (let tile of boardTiles) {
 		tile.removeClass('word-hovering');
 		tile.removeClass('invalid');
@@ -258,6 +251,8 @@ let onWordDrag = (word, mx, my) => {
 			y = letter.center.y + dragPos.y;
 			if (overlapTile(tile, x, y)) {
 				letter.tileHovering = tile;
+				if (tile.dataset.type === 'wild')
+					hasWild = true;
 				overlappedTiles.push([ letter, tile ]);
 			}
 		}
@@ -267,15 +262,21 @@ let onWordDrag = (word, mx, my) => {
 	
 	for (let [letter, tile] of overlappedTiles) {
 		tile.addClass('word-hovering');
-		let tileState = getTileState(letter, tile);
-		if (tileState === TILE_STATE.LETTER) {
-			//dragWordValidPlacement
+		if (doesTileHasLetter(letter, tile)) {
+			if (tile.dataset.letter === letter.dataset.letter) {
+				hasLetter = true;
+			} else {
+				dragWordValidPlacement = false;
+				tile.addClass('invalid');
+			}
 		}
 	}
 	
-	if (dragWordValidPlacement === false) {
+	dragWordValidPlacement = (dragWordValidPlacement && (hasWild || hasLetter));
+	
+	if (!dragWordValidPlacement) {
 		for (let [letter, tile] of overlappedTiles) {
-			if (getTileState(letter, tile) === TILE_STATE.EMPTY)
+			if (!doesTileHasLetter(letter, tile))
 				tile.addClass('invalid');
 		}
 	}
