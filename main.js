@@ -21,28 +21,47 @@ let words = [
 	'wicked',
 ];
 
-let roundPoints = 0;
+let pointsElem;
 
 const LETTER_POINTS = { A: 1, B: 3, C: 3, D: 2, E: 1, F: 4, G: 2, H: 4, I: 1, J: 8, K: 5, L: 1, M: 3, N: 1, O: 1, P: 3, Q: 10, R: 1, S: 1, T: 1, U: 1, V: 4, W: 4, X: 8, Y: 4, Z: 10 };
 
 document.on('DOMContentLoaded', (e) => {
 	document.head[0].append(style);
 	
-	let wordsElem = document.body.appendChild($new('.words').element());
+	let body = document.body;
+	
+	let headerElem = body.appendChild(
+		$new('header')
+			.children(
+				$new('.title'),
+				$new('.points').attr('data-points', 0)
+			)
+			.element()
+	);
+	pointsElem = headerElem.q('.points');
+	
+	boardElem = body.appendChild($new('.board').element());
+	let wordsElem = body.appendChild($new('.words').element());
 	wordsHolderElem = wordsElem.appendChild($new('.words-holder').element());
-	boardElem = document.body.appendChild($new('.board').element());
 	
 	let boardSize = 15;
 	let numTiles = boardSize * boardSize;
 	
 	let boardWidth = 100, boardHalfWidth = boardWidth / 2;
-	boardElem.style.width = `${boardWidth}em`;
-	boardElem.style.left = `calc(50% - ${boardHalfWidth}em)`;
+	let emWidth = `${boardWidth}em`;
+	let emLeft = `calc(50% - ${boardHalfWidth}em)`;
 	
-	wordsElem.style.top = `${boardWidth}em`;
-	wordsElem.style.width = `${boardWidth}em`;
-	wordsElem.style.height = `calc(100% - ${boardWidth}em)`;
-	wordsElem.style.left = `calc(50% - ${boardHalfWidth}em)`;
+	headerElem.style.width = emWidth;
+	headerElem.style.left = emLeft;
+	
+	boardElem.style.width = emWidth;
+	boardElem.style.left = emLeft;
+	boardElem.style.top = '10em';
+	
+	wordsElem.style.width = emWidth;
+	wordsElem.style.height = `calc(100% - ${boardWidth}em - 10em)`;
+	wordsElem.style.left = emLeft;
+	wordsElem.style.top = (boardWidth + 10) + `em`;
 	
 	let tileSize = (boardWidth - 3) / boardSize; // NOTE(bret): for that 1.5em padding yo
 	style.textContent = `.tile { width: ${tileSize}em; height: ${tileSize}em; }`;
@@ -199,7 +218,7 @@ let assignToGrid = (word) => {
 };
 
 let addPoints = (points) => {
-	roundPoints += points;
+	pointsElem.dataset.points = +pointsElem.dataset.points + points;
 };
 
 let returnToHand = (word) => {

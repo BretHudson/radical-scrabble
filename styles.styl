@@ -21,11 +21,48 @@ absoluteCenter()
 	top: 50%
 	transform: translate(-50%, -50%)
 
-header
-	text-align: center
-
-.board, .words
+header, .board, .words
 	top: 0
+
+header
+	position: fixed
+	height: 10em
+	color: white
+	padding: 0 3em
+	opacity: 0.7
+	.title, .points
+		font-size: 5em
+		height: 100%
+		position: relative
+		display: inline-block
+		//line-height: 0.5em
+		line-height: 0
+		height: 2em
+		padding: 0.25em 0
+		text-transform: uppercase
+		&::before, &::after
+			display: block
+			font-size: 0.75em
+			line-height: 1em
+			white-space: nowrap
+		&::after
+			opacity: 1
+	.title
+		float: left
+		&::before
+			content: 'Radical'
+			opacity: 0.6
+		&::after
+			content: 'Scrabble'
+	.points
+		float: right
+		text-align: right
+		&::before
+			content: 'Points'
+		&::after
+			content: attr(data-points)
+			opacity: 0.6
+		
 
 .board
 	position: absolute
