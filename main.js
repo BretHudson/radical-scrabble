@@ -160,6 +160,21 @@ let snapToTile = (word) => {
 	return valid;
 };
 
+let returnToHand = (word) => {
+	window.requestAnimationFrame(() => {
+		let after = null;
+		wordsHolderElem.q('.word').each(w => {
+			if (w.order > word.order)
+				after = w;
+		});
+		wordsHolderElem.insertBefore(word, after);
+		word.style.left = null;
+		word.style.top = null;
+		word.removeClass('drag');
+		word.removeClass('rotated');
+	});
+}
+
 let dragStartPos = { x: 0, y: 0 };
 let dragPos = { x: 0, y: 0 };
 let dragWord = null;
@@ -228,18 +243,7 @@ let endWordDrag = (word) => {
 		word.addClass('on-grid');
 		word.removeClass('drag');
 	} else {
-		window.requestAnimationFrame(() => {
-			let after = null;
-			wordsHolderElem.q('.word').each(w => {
-				if (w.order > word.order)
-					after = w;
-			});
-			wordsHolderElem.insertBefore(word, after);
-			word.style.left = null;
-			word.style.top = null;
-			word.removeClass('drag');
-			word.removeClass('rotated');
-		});
+		returnToHand(word);
 	}
 	
 	dragWord = null;
