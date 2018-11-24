@@ -62,9 +62,12 @@ header
 	&.drag, &.on-grid
 		position: absolute
 		z-index: 5
-		opacity: 0.7
 		.buttons
 			display: none
+	&.drag
+		opacity: 0.5
+	&.on-grid
+		opacity: 1.0
 	&.rotated .tile
 		display: block
 	.buttons
@@ -111,7 +114,8 @@ header
 		opacity: 0.3
 		.has-letter&
 			background-color: #deb887
-			opacity: 0.7
+			background-color: #C5A064
+			opacity: 1.0
 			.word-hovering&
 				background-color: red
 		.wild&
@@ -121,9 +125,9 @@ header
 		.premium-3-x-letter&
 			background-color: green
 		.premium-2-x-word&
-			background-color: red
+			background-color: cyan
 		.premium-3-x-word&
-			background-color: orange
+			background-color: magenta
 		.word-hovering&
 			background-color: lime
 	.letter
