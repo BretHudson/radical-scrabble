@@ -175,6 +175,16 @@ let snapToTile = (word) => {
 	return valid;
 };
 
+let placeOnGrid = (word) => {
+	let lll = word.letters[0].tileHovering
+	for (let letter of word.letters) {
+		let tile = letter.tileHovering;
+		tile.dataset.letter = letter.dataset.letter;
+		tile.addClass('has-letter');
+		tile.removeClass('no-letter');
+	};
+};
+
 let returnToHand = (word) => {
 	window.requestAnimationFrame(() => {
 		let after = null;
@@ -188,7 +198,7 @@ let returnToHand = (word) => {
 		word.removeClass('drag');
 		word.removeClass('rotated');
 	});
-}
+};
 
 let dragStartPos = { x: 0, y: 0 };
 let dragPos = { x: 0, y: 0 };
@@ -273,8 +283,10 @@ let onWordDrag = (word, mx, my) => {
 
 let endWordDrag = (word) => {
 	if (snapToTile(word)) {
-		word.addClass('on-grid');
-		word.removeClass('drag');
+		placeOnGrid(word);
+		word.remove();
+		//word.addClass('on-grid');
+		//word.removeClass('drag');
 	} else {
 		returnToHand(word);
 	}
