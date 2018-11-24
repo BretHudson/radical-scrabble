@@ -177,6 +177,8 @@ tColors[1] = red
 tColors[2] = purple
 tColors[3] = black
 
+stringThickness = 70%
+
 .tile
 	position: relative
 	display: inline-block
@@ -189,6 +191,7 @@ tColors[3] = black
 		border-radius: 15%
 		background-color: #a1a1a1
 		opacity: 0.3
+		z-index: 1
 		.has-letter&
 			//background-color: #deb887
 			background-color: #C5A064
@@ -217,29 +220,40 @@ tColors[3] = black
 		top: 0
 		right: 0
 		bottom: 0
+		opacity: 0.9
 		.vertical&::before, .horizontal&::after
 			content: ''
 			position: absolute
 			transform: translate(-50%, -50%)
 			background-color: #C5A064
-			z-index: 20
+			z-index: 0
+			left: 50%
+			top: 50%
 			.word-hovering&
 				opacity: 0.3
 				background-color: lime
 				.invalid&
 					background-color: red
 		.vertical&::before
-			width: 75%
-			height: 15%
-			left: 50%
-			top: 0
+			width: stringThickness
+			height: 100%
+			.top:not(.bottom)&
+				height: 50%
+				top: 75%
+			.bottom:not(.top)&
+				height: 50%
+				top: 25%
 		.horizontal&::after
-			width: 15%
-			height: 75%
-			left: 0
-			top: 50%
+			width: 100%
+			height: stringThickness
+			.left:not(.right)&
+				width: 50%
+				left: 75%
+			.right:not(.left)&
+				width: 50%
+				left: 25%
 	&::before
-		z-index: 1
+		z-index: 2
 		absoluteCenter()
 		position: absolute
 		font-size: 3.6em
@@ -261,6 +275,7 @@ tColors[3] = black
 			.x-3-word&
 				content: '3W'
 	.has-letter&::after
+		z-index: 2
 		position: absolute
 		top: 30%
 		left: 75%
