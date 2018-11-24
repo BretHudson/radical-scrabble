@@ -52,19 +52,19 @@ document.on('DOMContentLoaded', (e) => {
 		if ((x === 0) && (y === 0))
 			className = '.wild';
 		else if (((x === 7) || (y === 7)) && (d % 7 === 0))
-			className = '.premium-3-x-word';
+			className = '.x-3-word';
 		else if ((x === y) && (x >= 3) && (x <= 6))
-			className = '.premium-2-x-word';
+			className = '.x-2-word';
 		else if ((d === 4) && ((x === 6) || (y === 6)))
-			className = '.premium-3-x-letter';
+			className = '.x-3-letter';
 		else if ((x === y) && (x === 2))
-			className = '.premium-3-x-letter';
+			className = '.x-3-letter';
 		else if ((d === 3) && ((x === 7) || (y === 7)))
-			className = '.premium-2-x-letter';
+			className = '.x-2-letter';
 		else if ((d === 4) && ((x === 5) || (y === 5) || (x === 4) || (y === 4)))
-			className = '.premium-2-x-letter';
+			className = '.x-2-letter';
 		else if ((x === y) && (x === 1))
-			className = '.premium-2-x-letter';
+			className = '.x-2-letter';
 		
 		let tile = createTile(null, className);
 		boardTiles.push(tile);
@@ -87,7 +87,6 @@ document.on('DOMContentLoaded', (e) => {
 	let dragProgress = (e, e2) => {
 		if (dragWord !== null) {
 			e.preventDefault();
-			console.log('what');
 			onWordDrag(dragWord, e2.clientX, e2.clientY);
 		}
 	};
@@ -134,6 +133,7 @@ let createTile = (letter, className = '') => {
 		$new('.background')
 	)
 	.attr('data-letter', letter || '')
+	.attr('data-type', className.replace('.', '').replace('premium', ''))
 	.element();
 };
 
@@ -141,8 +141,17 @@ let overlapTile = (tile, x, y) => {
 	return (x >= tile.pos.left) && (x < tile.pos.right) && (y >= tile.pos.top) && (y < tile.pos.bottom);
 };
 
-let validTile = (letter, tile) => {
-	return true;
+const TILE_STATE = {
+	WILD: 0,
+	EMPTY: 1,
+	LETTER: 2
+};
+let getTileState = (letter, tile) => {
+	if (tile.dataset.type === 'wild')
+		return TILE_STATE.WILD;
+	if (tile.dataset.letter === '')
+		return TILE_STATE.EMPTY;
+	return TILE_STATE.LETTER;
 };
 
 let setWordPos = (word, x, y, before = null, execIfNull = false) => {
@@ -219,6 +228,7 @@ let beginWordDrag = (word, mx, my) => {
 	});
 };
 
+let dragWordValidPlacement = false;
 let onWordDrag = (word, mx, my) => {
 	dragPos.x = mx;
 	dragPos.y = my;
@@ -229,18 +239,34 @@ let onWordDrag = (word, mx, my) => {
 		letter.tileHovering = null;
 	
 	let x, y;
+	let overlappedTiles = [];
 	for (let tile of boardTiles) {
 		tile.removeClass('word-hovering');
+		tile.removeClass('invalid');
 		for (let letter of word.letters) {
 			x = letter.center.x + dragPos.x;
 			y = letter.center.y + dragPos.y;
 			if (overlapTile(tile, x, y)) {
 				letter.tileHovering = tile;
-				tile.addClass('word-hovering');
-				if (!validTile(letter, tile)) {
-					tile.addClass('invalid');
-				}
+				overlappedTiles.push([ letter, tile ]);
 			}
+		}
+	}
+	
+	dragWordValidPlacement = (overlappedTiles.length === word.letters.length);
+	
+	for (let [letter, tile] of overlappedTiles) {
+		tile.addClass('word-hovering');
+		let tileState = getTileState(letter, tile);
+		if (tileState === TILE_STATE.LETTER) {
+			//dragWordValidPlacement
+		}
+	}
+	
+	if (dragWordValidPlacement === false) {
+		for (let [letter, tile] of overlappedTiles) {
+			if (getTileState(letter, tile) === TILE_STATE.EMPTY)
+				tile.addClass('invalid');
 		}
 	}
 };
