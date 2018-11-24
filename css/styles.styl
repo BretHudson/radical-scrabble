@@ -19,9 +19,10 @@ body
 a
 	color: white
 	text-decoration: none
-	transition: color 0.1s
+	transition: color 0.2s, opacity 0.2s, transform 0.2s
+	transform: scale(1)
 	&:hover
-		color: #ffaaaa
+		transform: scale(1.03)
 
 absoluteCenter()
 	position: absolute
@@ -38,11 +39,22 @@ footer
 	bottom: 0
 	line-height: 6em
 	padding: 0 2em
-	opacity: 0.7
-	span, a
-		float: left
+	a
+		opacity: 0.7
 		font-size: 2.5em
 		padding-right: 1ch
+		&:hover
+			opacity: 1
+		&::before
+			opacity: 0.6
+	.author
+		float: left
+		&::before
+			content: 'Created by '
+	.build
+		float: right
+		&::before
+			content: 'View Source '
 	span
 		opacity: 0.6
 	.right

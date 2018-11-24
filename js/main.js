@@ -18,7 +18,7 @@ let boardElem, wordsHolderElem;
 
 let boardTiles = [];
 
-let version = '0.2.2';
+let version = '0.2.3';
 
 let words = [
 	'awesome',
@@ -67,12 +67,14 @@ document.on('DOMContentLoaded', (e) => {
 	let footerElem = body.appendChild(
 		$new('footer')
 			.children(
-				$new('span').text('Created by'),
-				$new('a')
+				$new('a.author')
 					.text('Bret Hudson')
 					.attr('href', 'https://brethudson.com')
 					.attr('target', '_BLANK'),
-				$new('span.right').text(`Version ${version}`)
+				$new('a.build')
+					.text(`${version}`)
+					.attr('href', 'https://github.com/BretHudson/radical-scrabble')
+					.attr('target', '_BLANK')
 			)
 			.element()
 	);
