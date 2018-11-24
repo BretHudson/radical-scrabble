@@ -8,7 +8,6 @@ let boardElem, wordsHolderElem;
 let boardTiles = [];
 
 const words = [
-	'righteous',
 	'awesome',
 	'bad',
 	'bitchin',
@@ -16,6 +15,7 @@ const words = [
 	'epic',
 	'gnarly',
 	'radical',
+	'righteous',
 	'sick',
 	'tubular',
 	'wicked',
@@ -146,6 +146,10 @@ let beginWordDrag = (word, mx, my) => {
 	dragStartPos.x = dragPos.x = mx;
 	dragStartPos.y = dragPos.y = my;
 	
+	word.letters.forEach(letter => {
+		letter.tileHovering = null;
+	});
+	
 	window.requestAnimationFrame(() => {
 		let rect = word.getBoundingClientRect();
 		if (word.hasClass('rotated'))
@@ -202,7 +206,12 @@ let endWordDrag = (word) => {
 		word.removeClass('drag');
 	} else {
 		window.requestAnimationFrame(() => {
-			wordsHolderElem.append(word);
+			let after = null;
+			wordsHolderElem.q('.word').each(w => {
+				if (w.order > word.order)
+					after = w;
+			});
+			wordsHolderElem.insertBefore(word, after);
 			word.style.left = null;
 			word.style.top = null;
 			word.removeClass('drag');
@@ -226,6 +235,7 @@ let addWord = (word) => {
 			))
 			.element();
 	wordElem.letters = [];
+	wordElem.order = wordsHolderElem.children.length;
 	wordElem.pos = { x: 0, y: 0 };
 	wordsHolderElem.append(wordElem);
 	
