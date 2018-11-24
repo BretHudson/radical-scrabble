@@ -54,25 +54,6 @@ document.on('DOMContentLoaded', (e) => {
 	let boardSize = 15;
 	let numTiles = boardSize * boardSize;
 	
-	let boardWidth = 100, boardHalfWidth = boardWidth / 2;
-	let emWidth = `${boardWidth}em`;
-	let emLeft = `calc(50% - ${boardHalfWidth}em)`;
-	
-	headerElem.style.width = emWidth;
-	headerElem.style.left = emLeft;
-	
-	boardElem.style.width = emWidth;
-	boardElem.style.left = emLeft;
-	boardElem.style.top = '10em';
-	
-	wordsElem.style.width = emWidth;
-	wordsElem.style.height = `calc(100% - ${boardWidth}em - 10em)`;
-	wordsElem.style.left = emLeft;
-	wordsElem.style.top = (boardWidth + 10) + `em`;
-	
-	let tileSize = (boardWidth - 3) / boardSize; // NOTE(bret): for that 1.5em padding yo
-	style.textContent = `.tile { width: ${tileSize}em; height: ${tileSize}em; }`;
-	
 	let centerPos = Math.floor(boardSize / 2);
 	for (let t = 0; t < numTiles; ++t) {
 		let x = Math.abs(centerPos - (t % boardSize));
@@ -101,6 +82,49 @@ document.on('DOMContentLoaded', (e) => {
 		boardTiles.push(tile);
 		boardElem.append(tile);
 	}
+	
+	for (let word of words)
+		addWord(word.toUpperCase());
+	
+	let boardWidth = 100, boardHalfWidth = boardWidth / 2;
+	let emWidth = `${boardWidth}em`;
+	let emLeft = `calc(50% - ${boardHalfWidth}em)`;
+	
+	headerElem.style.width = emWidth;
+	headerElem.style.left = emLeft;
+	
+	boardElem.style.width = emWidth;
+	boardElem.style.left = emLeft;
+	boardElem.style.top = '10em';
+	
+	wordsElem.style.width = emWidth;
+	wordsElem.style.height = `calc(100% - ${boardWidth}em - 10em)`;
+	wordsElem.style.left = emLeft;
+	wordsElem.style.top = (boardWidth + 10) + `em`;
+	
+	let tileSize = (boardWidth - 3) / boardSize; // NOTE(bret): for that 1.5em padding yo
+	style.textContent = `.tile { width: ${tileSize}em; height: ${tileSize}em; }`;
+	
+	const resize = () => {
+		// Resize the board
+		let navHeight = 6;
+		let tileSize = boardWidth / boardSize;
+		let size = Math.floor(Math.min(
+			window.innerWidth / (boardSize) / tileSize,
+			window.innerHeight / (navHeight + boardSize) / tileSize
+		));
+		document.body.style.fontSize = `${size}px`;
+		
+		// Update each tile's position
+		window.requestAnimationFrame(() => {
+			boardElem.q('.tile').each(tile => {
+				tile.pos = tile.getBoundingClientRect();
+			});
+		});
+	};
+	
+	window.on('resize', resize);
+	resize();
 	
 	let dragBegin = (e, e2) => {
 		if (e.target.hasClass('button')) {
@@ -133,30 +157,6 @@ document.on('DOMContentLoaded', (e) => {
 	
 	window.on('mouseup', dragEnd);
 	window.on('touchend', dragEnd);
-	
-	const resize = () => {
-		// Resize the board
-		let navHeight = 6;
-		let tileSize = boardWidth / boardSize;
-		let size = Math.floor(Math.min(
-			window.innerWidth / (boardSize) / tileSize,
-			window.innerHeight / (navHeight + boardSize) / tileSize
-		));
-		document.body.style.fontSize = `${size}px`;
-		
-		// Update each tile's position
-		window.requestAnimationFrame(() => {
-			boardElem.q('.tile').each(tile => {
-				tile.pos = tile.getBoundingClientRect();
-			});
-		});
-	};
-	
-	for (let word of words)
-		addWord(word.toUpperCase());
-	
-	window.on('resize', resize);
-	resize();
 });
 
 let createTile = (letter, className = '') => {
