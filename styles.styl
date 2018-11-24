@@ -101,11 +101,11 @@ header
 				height: 100%
 
 // #6666ff
-tileColors = 0, 0, 0, 0
-tileColors[0] = orange
-tileColors[1] = red
-tileColors[2] = purple
-tileColors[3] = black
+tColors = 0, 0, 0, 0
+tColors[0] = orange
+tColors[1] = red
+tColors[2] = purple
+tColors[3] = black
 
 .tile
 	position: relative
@@ -123,20 +123,24 @@ tileColors[3] = black
 			background-color: #deb887
 			background-color: #C5A064
 			opacity: 1.0
-		.wild&
-			background-color: yellow
-		.x-2-letter&
-			background-color: tileColors[0]
-		.x-3-letter&
-			background-color: tileColors[1]
-		.x-2-word&
-			background-color: tileColors[2]
-		.x-3-word&
-			background-color: tileColors[3]
-		.word-hovering&
-			background-color: lime
-			.invalid&
-				background-color: red
+		.no-letter&
+			.wild&
+				background-color: yellow
+			.x-2-letter&
+				background-color: tColors[0]
+			.x-3-letter&
+				background-color: tColors[1]
+			.x-2-word&
+				background-color: tColors[2]
+			.x-3-word&
+				background-color: tColors[3]
+		.has-letter&,
+		.no-letter&
+			.word-hovering&
+				opacity: 0.3
+				background-color: lime
+				.invalid&
+					background-color: red
 	&::before
 		z-index: 1
 		absoluteCenter()
