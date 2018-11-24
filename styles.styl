@@ -116,8 +116,6 @@ header
 			background-color: #deb887
 			background-color: #C5A064
 			opacity: 1.0
-			.word-hovering&
-				background-color: red
 		.wild&
 			background-color: yellow
 		.premium-2-x-letter&
@@ -130,33 +128,35 @@ header
 			background-color: magenta
 		.word-hovering&
 			background-color: lime
-	.letter
+			.invalid&
+				background-color: red
+	&::before
+		z-index: 1
 		absoluteCenter()
 		position: absolute
 		font-size: 3.6em
 		text-transform: uppercase
 		.has-letter&
 			left: 45%
-			&::after
-				position: absolute
-				top: -120%
-				left: 120%
-				font-size: 0.6em
-				content: '2'
-		^[0]:not(.has-letter) ^[1..-1]
+			content: attr(data-letter)
+		.no-letter&
 			font-size: 3.0em
 			.wild&
 				font-size: 5em
 				top: 62%
-				&::before
-					content: '*'
-			.premium-2-x-letter&::before
+				content: '*'
+			.premium-2-x-letter&
 				content: '2L'
-			.premium-3-x-letter&::before
+			.premium-3-x-letter&
 				content: '3L'
-			.premium-2-x-word&::before
+			.premium-2-x-word&
 				content: '2W'
-			.premium-3-x-word&::before
+			.premium-3-x-word&
 				content: '3W'
-		&::before
-			content: attr(data-letter)
+	.has-letter&::after
+		position: absolute
+		top: 30%
+		left: 75%
+		transform: translate(-50%, -50%)
+		font-size: 2.2em
+		content: '2'

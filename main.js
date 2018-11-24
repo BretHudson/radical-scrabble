@@ -130,14 +130,19 @@ document.on('DOMContentLoaded', (e) => {
 });
 
 let createTile = (letter, className = '') => {
-	return $new('.tile' + className + ((letter) ? '.has-letter' : '')).children(
-		$new('.background'),
-		$new('.letter').attr('data-letter', letter || '')
-	).element();
+	return $new('.tile' + className + ((letter) ? '.has-letter' : '.no-letter')).children(
+		$new('.background')
+	)
+	.attr('data-letter', letter || '')
+	.element();
 };
 
 let overlapTile = (tile, x, y) => {
-	return (x >= tile.pos.left) && (x < tile.pos.right) && (y >= tile.pos.top) && (y < tile.pos.bottom)
+	return (x >= tile.pos.left) && (x < tile.pos.right) && (y >= tile.pos.top) && (y < tile.pos.bottom);
+};
+
+let validTile = (letter, tile) => {
+	return true;
 };
 
 let setWordPos = (word, x, y, before = null, execIfNull = false) => {
@@ -232,6 +237,9 @@ let onWordDrag = (word, mx, my) => {
 			if (overlapTile(tile, x, y)) {
 				letter.tileHovering = tile;
 				tile.addClass('word-hovering');
+				if (!validTile(letter, tile)) {
+					tile.addClass('invalid');
+				}
 			}
 		}
 	}
