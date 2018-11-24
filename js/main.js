@@ -296,12 +296,14 @@ let beginWordDrag = (word, mx, my) => {
 	
 	window.requestAnimationFrame(() => {
 		let rect = word.getBoundingClientRect();
+		word.pos.x = mx - rect.width;
+		word.pos.y = my - rect.height;
 		if (word.hasClass('rotated'))
 			rect.height /= word.letters.length;
 		else
 			rect.width /= word.letters.length;
-		word.pos.x = mx - rect.width;
-		word.pos.y = my - rect.height;
+		if (IS_TOUCH_DEVICE)
+			word.pos.y -= rect.height * 2.25;
 		for (let [index, letter] of word.letters.entries()) {
 			let xx = word.pos.x;
 			let yy = word.pos.y;
