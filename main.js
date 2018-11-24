@@ -187,15 +187,9 @@ let setWordPos = (word, x, y, before = null, execIfNull = false) => {
 };
 
 let snapToTile = (word) => {
-	let valid = dragWordValidPlacement;//word.letters.reduce((valid, letter) => valid & (letter.tileHovering !== null), true);
-	
-	if (valid) {
-		word.pos.x = word.pos.y = 0;
-		let firstTile = word.letters[0].tileHovering;
-		setWordPos(word, firstTile.pos.x, firstTile.pos.y, null, true);
-	}
-	
-	return valid;
+	word.pos.x = word.pos.y = 0;
+	let firstTile = word.letters[0].tileHovering;
+	setWordPos(word, firstTile.pos.x, firstTile.pos.y, null, true);
 };
 
 let assignToGrid = (word) => {
@@ -335,11 +329,10 @@ let onWordDrag = (word, mx, my) => {
 };
 
 let endWordDrag = (word) => {
-	if (snapToTile(word)) {
+	if (dragWordValidPlacement) {
+		snapToTile(word);
 		assignToGrid(word);
 		word.remove();
-		//word.addClass('on-grid');
-		//word.removeClass('drag');
 	} else {
 		returnToHand(word);
 	}
