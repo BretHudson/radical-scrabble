@@ -64,8 +64,8 @@ header
 	position: fixed
 	height: 10em
 	padding: 0 2em
-	opacity: 0.7
 	.title, .points
+		opacity: 0.7
 		font-size: 5em
 		height: 100%
 		position: relative
@@ -74,6 +74,9 @@ header
 		height: 2em
 		padding: 0.5em 0
 		text-transform: uppercase
+		transition: opacity 0.2s
+		&:hover
+			opacity: 1
 		&::before, &::after
 			display: block
 			font-size: 0.75em
@@ -99,7 +102,6 @@ header
 		
 
 .board
-	
 	position: absolute
 	line-height: 0
 	background-color: c_black
@@ -220,7 +222,7 @@ stringThickness = 70%
 		top: 0
 		right: 0
 		bottom: 0
-		opacity: 0.9
+		opacity: 0.85
 		.vertical&::before, .horizontal&::after
 			content: ''
 			position: absolute
