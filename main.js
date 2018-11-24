@@ -1,6 +1,17 @@
 // NOTE(bret): Thanks to Ian Jones for providing a bit of the boilerplate code here from https://github.com/WITS/regretris/
-const IS_TOUCH_DEVICE = !!(('ontouchstart' in window) ||
-	window.DocumentTouch && document instanceof DocumentTouch);
+let userAgent = navigator.userAgent;
+const IS_TOUCH_DEVICE = !!(('ontouchstart' in window) || window.DocumentTouch && document instanceof DocumentTouch);
+const IS_MOBILE = /(iPhone|iPod|iPad|Android|BlackBerry)/i.test(userAgent);
+const IS_FIREFOX = (/\bfirefox\//i.test(userAgent) &&
+    !/\bseamonkey\//i.test(userAgent));
+const IS_CHROME = (/\bchrome\//i.test(userAgent) &&
+    !/\b(?:chromium|edge)\//i.test(userAgent));
+const IS_SAFARI = (/\bsafari\//i.test(userAgent) &&
+    !/\b(?:chrome|chromium)\//i.test(userAgent));
+const IS_OPERA = (/\b(?:opera|opr)\//i.test(userAgent));
+const IS_WEBKIT = (IS_CHROME || IS_SAFARI || IS_OPERA);
+const IS_MSIE = (/\b(?:MSIE|Trident)\b/i.test(userAgent));
+const IS_EDGE = (userAgent.indexOf("Edge") != -1);
 
 let style = $new('style[type=text/css]').element();
 let boardElem, wordsHolderElem;
