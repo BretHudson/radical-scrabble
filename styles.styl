@@ -131,20 +131,28 @@ header
 		position: absolute
 		font-size: 3.6em
 		text-transform: uppercase
+		.has-letter&
+			left: 45%
+			&::after
+				position: absolute
+				top: -120%
+				left: 120%
+				font-size: 0.6em
+				content: '2'
 		^[0]:not(.has-letter) ^[1..-1]
 			font-size: 3.0em
 			.wild&
 				font-size: 5em
 				top: 62%
-				&::after
+				&::before
 					content: '*'
-			.premium-2-x-letter&::after
+			.premium-2-x-letter&::before
 				content: '2L'
-			.premium-3-x-letter&::after
+			.premium-3-x-letter&::before
 				content: '3L'
-			.premium-2-x-word&::after
+			.premium-2-x-word&::before
 				content: '2W'
-			.premium-3-x-word&::after
+			.premium-3-x-word&::before
 				content: '3W'
-		&::after
+		&::before
 			content: attr(data-letter)
