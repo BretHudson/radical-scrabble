@@ -100,6 +100,12 @@ header
 			&::after
 				height: 100%
 
+tileColors = 0, 0, 0, 0
+tileColors[0] = #6666ff
+tileColors[1] = magenta
+tileColors[2] = orange
+tileColors[3] = black
+
 .tile
 	position: relative
 	display: inline-block
@@ -119,13 +125,13 @@ header
 		.wild&
 			background-color: yellow
 		.x-2-letter&
-			background-color: blue
+			background-color: tileColors[0]
 		.x-3-letter&
-			background-color: green
+			background-color: tileColors[1]
 		.x-2-word&
-			background-color: cyan
+			background-color: tileColors[2]
 		.x-3-word&
-			background-color: magenta
+			background-color: tileColors[3]
 		.word-hovering&
 			background-color: lime
 			.invalid&
