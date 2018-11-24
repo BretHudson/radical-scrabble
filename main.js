@@ -18,6 +18,8 @@ let boardElem, wordsHolderElem;
 
 let boardTiles = [];
 
+let version = '0.2.2';
+
 let words = [
 	'awesome',
 	'bitchin',
@@ -62,6 +64,19 @@ document.on('DOMContentLoaded', (e) => {
 	let wordsElem = body.appendChild($new('.words').element());
 	wordsHolderElem = wordsElem.appendChild($new('.words-holder').element());
 	
+	let footerElem = body.appendChild(
+		$new('footer')
+			.children(
+				$new('span').text('Created by'),
+				$new('a')
+					.text('Bret Hudson')
+					.attr('href', 'https://brethudson.com')
+					.attr('target', '_BLANK'),
+				$new('span.right').text(`Version ${version}`)
+			)
+			.element()
+	);
+	
 	let boardSize = 15;
 	let numTiles = boardSize * boardSize;
 	
@@ -101,29 +116,31 @@ document.on('DOMContentLoaded', (e) => {
 	let emWidth = `${boardWidth}em`;
 	let emLeft = `calc(50% - ${boardHalfWidth}em)`;
 	
-	headerElem.style.width = emWidth;
-	headerElem.style.left = emLeft;
+	headerElem.style.width = footerElem.style.width = emWidth;
+	headerElem.style.left = footerElem.style.left = emLeft;
 	
 	boardElem.style.width = emWidth;
 	boardElem.style.left = emLeft;
-	boardElem.style.top = '10em';
+	boardElem.style.top = '12em';
 	
 	wordsElem.style.width = emWidth;
-	wordsElem.style.height = `calc(100% - ${boardWidth}em - 10em)`;
+	wordsElem.style.height = `calc(100% - ${boardWidth}em - 18em)`;
 	wordsElem.style.left = emLeft;
-	wordsElem.style.top = (boardWidth + 10) + `em`;
+	wordsElem.style.top = (boardWidth + 12) + `em`;
 	
 	let tileSize = (boardWidth - 3) / boardSize; // NOTE(bret): for that 1.5em padding yo
 	style.textContent = `.tile { width: ${tileSize}em; height: ${tileSize}em; }`;
 	
 	const resize = () => {
 		// Resize the board
-		let navHeight = 6;
+		let navHeight = 9;
 		let tileSize = boardWidth / boardSize;
-		let size = Math.floor(Math.min(
-			window.innerWidth / (boardSize) / tileSize,
+		let size = Math.min(
+			window.innerWidth / (boardSize + 0.5) / tileSize,
 			window.innerHeight / (navHeight + boardSize) / tileSize
-		));
+		);
+		if (IS_FIREFOX)
+			size = Math.floor(size);
 		document.body.style.fontSize = `${size}px`;
 		
 		// Update each tile's position
