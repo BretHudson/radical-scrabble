@@ -122,7 +122,8 @@ document.on('DOMContentLoaded', (e) => {
 		});
 	};
 	
-	words.forEach(word => addWord(word));
+	for (let word of words)
+		addWord(word);
 	
 	window.on('resize', resize);
 	resize();
@@ -184,9 +185,8 @@ let beginWordDrag = (word, mx, my) => {
 	dragStartPos.x = dragPos.x = mx;
 	dragStartPos.y = dragPos.y = my;
 	
-	word.letters.forEach(letter => {
+	for (let letter of word.letters)
 		letter.tileHovering = null;
-	});
 	
 	window.requestAnimationFrame(() => {
 		let rect = word.getBoundingClientRect();
@@ -196,7 +196,7 @@ let beginWordDrag = (word, mx, my) => {
 			rect.width /= word.letters.length;
 		word.pos.x = mx - rect.width;
 		word.pos.y = my - rect.height;
-		word.letters.forEach((letter, index) => {
+		for (let [index, letter] of word.letters.entries()) {
 			let xx = word.pos.x;
 			let yy = word.pos.y;
 			if (word.hasClass('rotated'))
@@ -205,7 +205,7 @@ let beginWordDrag = (word, mx, my) => {
 				xx += (index * rect.width);
 			letter.center.x = xx + (rect.width / 2) - mx;
 			letter.center.y = yy + (rect.height / 2) - my;
-		});
+		}
 		setWordPos(word, 0, 0, () => {
 			document.body.append(word);
 			word.addClass('drag');
@@ -220,22 +220,21 @@ let onWordDrag = (word, mx, my) => {
 	
 	setWordPos(word, dragPos.x - dragStartPos.x, dragPos.y - dragStartPos.y);
 	
-	word.letters.forEach(letter => {
+	for (let letter of word.letters)
 		letter.tileHovering = null;
-	});
 	
 	let x, y;
-	boardTiles.forEach(tile => {
+	for (let tile of boardTiles) {
 		tile.removeClass('word-hovering');
-		word.letters.forEach(letter => {
+		for (let letter of word.letters) {
 			x = letter.center.x + dragPos.x;
 			y = letter.center.y + dragPos.y;
 			if (overlapTile(tile, x, y)) {
 				letter.tileHovering = tile;
 				tile.addClass('word-hovering');
 			}
-		});
-	});
+		}
+	}
 };
 
 let endWordDrag = (word) => {
@@ -248,9 +247,8 @@ let endWordDrag = (word) => {
 	
 	dragWord = null;
 	
-	boardTiles.forEach(tile => {
+	for (let tile of boardTiles)
 		tile.removeClass('word-hovering');
-	});
 };
 
 let addWord = (word) => {
@@ -266,10 +264,10 @@ let addWord = (word) => {
 	wordElem.pos = { x: 0, y: 0 };
 	wordsHolderElem.append(wordElem);
 	
-	word.split('').forEach(letter => {
+	for (let letter of word) {
 		letter = createTile(letter);
 		letter.center = { x: 0, y: 0 };
 		wordElem.letters.push(letter);
 		wordElem.append(letter);
-	});
+	}
 };
