@@ -9,14 +9,21 @@ let boardTiles = [];
 
 let words = [
 	'awesome',
-	'bad',
 	'bitchin',
+	'boss',
 	'cool',
+	'dope',
 	'epic',
+	'fresh',
 	'gnarly',
+	'groovy',
+	//'hip',
+	'mint',
 	'radical',
 	'righteous',
+	'sweet',
 	'sick',
+	'tight',
 	'tubular',
 	'wicked',
 ];
