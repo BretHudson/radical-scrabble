@@ -190,7 +190,7 @@ tColors[3] = black
 		background-color: #a1a1a1
 		opacity: 0.3
 		.has-letter&
-			background-color: #deb887
+			//background-color: #deb887
 			background-color: #C5A064
 			opacity: 1.0
 		.no-letter&
@@ -211,6 +211,33 @@ tColors[3] = black
 				background-color: lime
 				.invalid&
 					background-color: red
+	.strings
+		position: absolute
+		left: 0
+		top: 0
+		right: 0
+		bottom: 0
+		.vertical&::before, .horizontal&::after
+			content: ''
+			position: absolute
+			transform: translate(-50%, -50%)
+			background-color: #C5A064
+			z-index: 20
+			.word-hovering&
+				opacity: 0.3
+				background-color: lime
+				.invalid&
+					background-color: red
+		.vertical&::before
+			width: 75%
+			height: 15%
+			left: 50%
+			top: 0
+		.horizontal&::after
+			width: 15%
+			height: 75%
+			left: 0
+			top: 50%
 	&::before
 		z-index: 1
 		absoluteCenter()

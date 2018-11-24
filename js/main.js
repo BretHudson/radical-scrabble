@@ -207,7 +207,7 @@ let shuffle = (arr) => {
 let createTile = (letter, className = '') => {
 	let prefix = (letter) ? 'has' : 'no'
 	return $new(`.tile${className}.${prefix}-letter`)
-			.children($new('.background'))
+			.children($new('.background'), $new('.strings'))
 			.attr('data-letter', letter || '')
 			.attr('data-points', letter ? LETTER_POINTS[letter] : '')
 			.attr('data-type', className.replace('.', '').replace('premium', ''))
@@ -241,6 +241,7 @@ let assignToGrid = (word) => {
 	let multiplier = 1;
 	let points = 0;
 	let lll = word.letters[0].tileHovering
+	let index = 0;
 	for (let letter of word.letters) {
 		let tile = letter.tileHovering;
 		tile.dataset.letter = letter.dataset.letter;
@@ -258,7 +259,16 @@ let assignToGrid = (word) => {
 		
 		points += curPoints;
 		
-		tile.className = 'tile has-letter';
+		tile.removeClass('wild');
+		tile.removeClass('x-2-letter');
+		tile.removeClass('x-3-letter');
+		tile.removeClass('x-2-word');
+		tile.removeClass('x-3-word');
+		tile.removeClass('no-letter');
+		
+		tile.addClass('has-letter');
+		if (index++ > 0)
+			tile.addClass((word.hasClass('rotated')) ? 'vertical' : 'horizontal');
 	};
 	addPoints(points * multiplier);
 };
