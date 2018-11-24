@@ -21,6 +21,8 @@ const words = [
 	'wicked',
 ];
 
+const points = { A: 1, B: 3, C: 3, D: 2, E: 1, F: 4, G: 2, H: 4, I: 1, J: 8, K: 5, L: 1, M: 3, N: 1, O: 1, P: 3, Q: 10, R: 1, S: 1, T: 1, U: 1, V: 4, W: 4, X: 8, Y: 4, Z: 10 };
+
 document.on('DOMContentLoaded', (e) => {
 	document.head[0].append(style);
 	
@@ -122,19 +124,24 @@ document.on('DOMContentLoaded', (e) => {
 	};
 	
 	for (let word of words)
-		addWord(word);
+		addWord(word.toUpperCase());
 	
 	window.on('resize', resize);
 	resize();
 });
 
 let createTile = (letter, className = '') => {
-	return $new('.tile' + className + ((letter) ? '.has-letter' : '.no-letter')).children(
-		$new('.background')
-	)
-	.attr('data-letter', letter || '')
-	.attr('data-type', className.replace('.', '').replace('premium', ''))
-	.element();
+	if (letter !== null) {
+		console.log(letter);
+		console.log(points[letter]);
+	}
+	let prefix = (letter) ? 'has' : 'no'
+	return $new(`.tile${className}.${prefix}-letter`)
+			.children($new('.background'))
+			.attr('data-letter', letter || '')
+			.attr('data-points', letter ? points[letter] : '')
+			.attr('data-type', className.replace('.', '').replace('premium', ''))
+			.element();
 };
 
 let overlapTile = (tile, x, y) => {
