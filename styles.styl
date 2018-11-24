@@ -115,11 +115,35 @@ header
 			opacity: 0.7
 			.word-hovering&
 				background-color: red
-		.test&
-			background-color: purple
+		.wild&
+			background-color: yellow
+		.premium-2-x-letter&
+			background-color: blue
+		.premium-3-x-letter&
+			background-color: green
+		.premium-2-x-word&
+			background-color: red
+		.premium-3-x-word&
+			background-color: orange
 	.letter
 		absoluteCenter()
+		position: absolute
 		font-size: 4em
 		text-transform: uppercase
+		^[0]:not(.has-letter) ^[1..-1]
+			font-size: 3.0em
+			.wild&
+				font-size: 5em
+				top: 67%
+				&::after
+					content: '*'
+			.premium-2-x-letter&::after
+				content: '2L'
+			.premium-3-x-letter&::after
+				content: '3L'
+			.premium-2-x-word&::after
+				content: '2W'
+			.premium-3-x-word&::after
+				content: '3W'
 		&::after
 			content: attr(data-letter)

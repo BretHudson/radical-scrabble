@@ -42,8 +42,31 @@ document.on('DOMContentLoaded', (e) => {
 	let tileSize = (boardWidth - 3) / boardSize; // NOTE(bret): for that 1.5em padding yo
 	style.textContent = `.tile { width: ${tileSize}em; height: ${tileSize}em; }`;
 	
+	let centerPos = Math.floor(boardSize / 2);
 	for (let t = 0; t < numTiles; ++t) {
-		let tile = createTile();
+		let x = Math.abs(centerPos - (t % boardSize));
+		let y = Math.abs(centerPos - Math.floor(t / boardSize));
+		let d = Math.abs(x - y);
+		
+		let className = '';
+		if ((x === 0) && (y === 0))
+			className = '.wild';
+		else if (((x === 7) || (y === 7)) && (d % 7 === 0))
+			className = '.premium-3-x-word';
+		else if ((x === y) && (x >= 3) && (x <= 6))
+			className = '.premium-2-x-word';
+		else if ((d === 4) && ((x === 6) || (y === 6)))
+			className = '.premium-3-x-letter';
+		else if ((x === y) && (x === 2))
+			className = '.premium-3-x-letter';
+		else if ((d === 3) && ((x === 7) || (y === 7)))
+			className = '.premium-2-x-letter';
+		else if ((d === 4) && ((x === 5) || (y === 5) || (x === 4) || (y === 4)))
+			className = '.premium-2-x-letter';
+		else if ((x === y) && (x === 1))
+			className = '.premium-2-x-letter';
+		
+		let tile = createTile(null, className);
 		boardTiles.push(tile);
 		boardElem.append(tile);
 	}
@@ -105,8 +128,8 @@ document.on('DOMContentLoaded', (e) => {
 	resize();
 });
 
-let createTile = (letter) => {
-	return $new('.tile' + ((letter) ? '.has-letter' : '')).children(
+let createTile = (letter, className = '') => {
+	return $new('.tile' + className + ((letter) ? '.has-letter' : '')).children(
 		$new('.background'),
 		$new('.letter').attr('data-letter', letter || '')
 	).element();
