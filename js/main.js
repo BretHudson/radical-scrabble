@@ -109,7 +109,7 @@ document.on('DOMContentLoaded', (e) => {
 		boardElem.append(tile);
 	}
 	
-	for (let word of words)
+	for (let word of shuffle(words))
 		addWord(word.toUpperCase());
 	
 	let boardWidth = 100, boardHalfWidth = boardWidth / 2;
@@ -186,6 +186,21 @@ document.on('DOMContentLoaded', (e) => {
 	window.on('mouseup', dragEnd);
 	window.on('touchend', dragEnd);
 });
+
+let shuffle = (arr) => {
+	let curIndex = arr.length, temp, randomIndex;
+	
+	while (curIndex > 0) {
+		randomIndex = Math.floor(Math.random() * 9999999) % curIndex;
+		--curIndex;
+		
+		temp = arr[curIndex];
+		arr[curIndex] = arr[randomIndex];
+		arr[randomIndex] = temp;
+	}
+	
+	return arr;
+};
 
 let createTile = (letter, className = '') => {
 	let prefix = (letter) ? 'has' : 'no'
