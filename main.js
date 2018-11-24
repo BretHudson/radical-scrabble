@@ -7,7 +7,7 @@ let boardElem, wordsHolderElem;
 
 let boardTiles = [];
 
-const words = [
+let words = [
 	'awesome',
 	'bad',
 	'bitchin',
@@ -21,7 +21,9 @@ const words = [
 	'wicked',
 ];
 
-const points = { A: 1, B: 3, C: 3, D: 2, E: 1, F: 4, G: 2, H: 4, I: 1, J: 8, K: 5, L: 1, M: 3, N: 1, O: 1, P: 3, Q: 10, R: 1, S: 1, T: 1, U: 1, V: 4, W: 4, X: 8, Y: 4, Z: 10 };
+let roundPoints = 0;
+
+const LETTER_POINTS = { A: 1, B: 3, C: 3, D: 2, E: 1, F: 4, G: 2, H: 4, I: 1, J: 8, K: 5, L: 1, M: 3, N: 1, O: 1, P: 3, Q: 10, R: 1, S: 1, T: 1, U: 1, V: 4, W: 4, X: 8, Y: 4, Z: 10 };
 
 document.on('DOMContentLoaded', (e) => {
 	document.head[0].append(style);
@@ -131,15 +133,11 @@ document.on('DOMContentLoaded', (e) => {
 });
 
 let createTile = (letter, className = '') => {
-	if (letter !== null) {
-		console.log(letter);
-		console.log(points[letter]);
-	}
 	let prefix = (letter) ? 'has' : 'no'
 	return $new(`.tile${className}.${prefix}-letter`)
 			.children($new('.background'))
 			.attr('data-letter', letter || '')
-			.attr('data-points', letter ? points[letter] : '')
+			.attr('data-points', letter ? LETTER_POINTS[letter] : '')
 			.attr('data-type', className.replace('.', '').replace('premium', ''))
 			.element();
 };
@@ -174,13 +172,33 @@ let snapToTile = (word) => {
 };
 
 let assignToGrid = (word) => {
+	let multiplier = 1;
+	let points = 0;
 	let lll = word.letters[0].tileHovering
 	for (let letter of word.letters) {
 		let tile = letter.tileHovering;
 		tile.dataset.letter = letter.dataset.letter;
-		tile.addClass('has-letter');
-		tile.removeClass('no-letter');
+		tile.dataset.points = letter.dataset.points;
+		let curPoints = +tile.dataset.points;
+		
+		if (tile.hasClass('x-2-letter'))
+			curPoints *= 2;
+		if (tile.hasClass('x-3-letter'))
+			curPoints *= 3;
+		if (tile.hasClass('x-2-word'))
+			multiplier *= 2;
+		if (tile.hasClass('x-3-word'))
+			multiplier *= 3;
+		
+		points += curPoints;
+		
+		tile.className = 'tile has-letter';
 	};
+	addPoints(points * multiplier);
+};
+
+let addPoints = (points) => {
+	roundPoints += points;
 };
 
 let returnToHand = (word) => {
