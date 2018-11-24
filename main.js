@@ -166,7 +166,7 @@ let snapToTile = (word) => {
 	return valid;
 };
 
-let placeOnGrid = (word) => {
+let assignToGrid = (word) => {
 	let lll = word.letters[0].tileHovering
 	for (let letter of word.letters) {
 		let tile = letter.tileHovering;
@@ -284,7 +284,7 @@ let onWordDrag = (word, mx, my) => {
 
 let endWordDrag = (word) => {
 	if (snapToTile(word)) {
-		placeOnGrid(word);
+		assignToGrid(word);
 		word.remove();
 		//word.addClass('on-grid');
 		//word.removeClass('drag');
