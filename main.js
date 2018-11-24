@@ -129,7 +129,7 @@ document.on('DOMContentLoaded', (e) => {
 	
 	const resize = () => {
 		// Resize the board
-		let navHeight = 5;
+		let navHeight = 6;
 		let tileSize = boardWidth / boardSize;
 		let size = Math.floor(Math.min(
 			window.innerWidth / (boardSize) / tileSize,
