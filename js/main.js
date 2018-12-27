@@ -55,6 +55,11 @@ document.on('DOMContentLoaded', (e) => {
 		$new('header')
 			.children(
 				$new('.title'),
+				$new('.nav').children(
+					$new('span').child($new('i').class('typicons-back')),
+					$new('span').child($new('i').class('typicons-info')),
+					$new('span').child($new('i').class('typicons-refresh')),
+				),
 				$new('.points').attr('data-points', '000')
 			)
 			.element()

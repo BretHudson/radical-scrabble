@@ -1,3 +1,5 @@
+@import url(http://weloveiconfonts.com/api/?family=typicons);
+
 c_black = #2f2f69
 
 c_bg = #685B87
@@ -7,6 +9,9 @@ c_bg = #685B87
 
 html
 	font-family: Consolas, monaco, monospace
+
+[class*="typicons-"]::before
+	font-family: 'typicons', sans-serif;
 
 body
 	margin: 0
@@ -99,7 +104,43 @@ header
 		&::after
 			content: attr(data-points)
 			opacity: 0.6
-		
+	.nav
+		position: absolute
+		text-align: center
+		font-size: 5em
+		line-height: 3.4em
+		top: 0
+		left: 0
+		right: 0
+		height: 100%
+		z-index: -1
+		span
+			position: relative
+			display: inline-block
+			border-radius: 30%
+			width: 1.6em
+			height: 1.6em
+			border: 0.12em solid rgba(255, 255, 255, 0.6)
+			margin: 0 0.15em
+			opacity: 0.7
+			transition: opacity 0.2s
+			i
+				font-size: 1.25em
+				position: absolute
+				font-style: normal
+				transform: translate(-50%, -50%)
+			.typicons-back
+				font-size: 1.1em
+				top: 63%
+				left: 50%
+			.typicons-info
+				top: 68%
+				left: 51%
+			.typicons-refresh
+				top: 65%
+				left: 50%
+			&:hover
+				opacity: 1
 
 .board
 	position: absolute
