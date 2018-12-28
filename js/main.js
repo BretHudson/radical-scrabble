@@ -124,7 +124,13 @@ document.on('DOMContentLoaded', (e) => {
 		else if ((x === y) && (x === 1))
 			className = '.x-2-letter';
 		
+		let speed = 0.04;
+		let delay = (x + y) * speed;
+		if (className !== '')
+			delay += 12 * speed;
+		
 		let tile = createTile(null, className);
+		tile.style.animationDelay = tile.q('.background').style.animationDelay = delay + 's';
 		grid[_x][_y] = tile;
 		boardTiles.push(tile);
 		boardElem.append(tile);

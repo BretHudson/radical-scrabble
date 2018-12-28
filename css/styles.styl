@@ -222,6 +222,25 @@ tColors[3] = black
 
 stringThickness = 70%
 
+@keyframes tileScale
+	from
+		transform: scale(0)
+		opacity: 0
+	to
+		transform: scale(1)
+		opacity: 1
+
+@keyframes tileRotate1
+	from
+		transform: rotate(180deg)
+	to
+		transform: rotate(0deg)
+@keyframes tileRotate2
+	from
+		transform: rotate(-180deg)
+	to
+		transform: rotate(0deg)
+
 .tile
 	position: relative
 	display: inline-block
@@ -235,6 +254,8 @@ stringThickness = 70%
 		background-color: #a1a1a1
 		opacity: 0.3
 		z-index: 1
+		/*^[0]:nth-child(2n) ^[1..-1]
+			animation: tileRotate1 1s*/
 		.has-letter&
 			//background-color: #deb887
 			background-color: #C5A064
@@ -325,3 +346,7 @@ stringThickness = 70%
 		transform: translate(-50%, -50%)
 		font-size: 2.2em
 		content: attr(data-points)
+	&:not(.has-letter)
+		opacity: 0
+		animation: tileScale 0.5s forwards
+		animation-timing-function: cubic-bezier(0.175, 0.885, 0.32, 2.275)
