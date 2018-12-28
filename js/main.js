@@ -41,6 +41,14 @@ let words = [
 	'wicked',
 ];
 
+Math.lerp = (a, b, t) => (b - a) * t + a;
+Math.easeIn = t => t * t;
+Math.easeOut = t => -t * (t - 2);
+Math.easeInOut = t => (t <= .5) ? (t * t * 2) : (1 - (--t) * t * 2);
+
+words = words.slice(0, 1);
+let grid;
+
 let pointsElem;
 let totalPoints = 0;
 
@@ -56,8 +64,8 @@ document.on('DOMContentLoaded', (e) => {
 			.children(
 				$new('.title'),
 				$new('.nav').children(
-					$new('span').child($new('i').class('typicons-back')),
-					$new('span').child($new('i').class('typicons-info')),
+					$new('span.undo').child($new('i').class('typicons-back')),
+					$new('span.').child($new('i').class('typicons-info')),
 					$new('span').child($new('i').class('typicons-refresh')),
 				),
 				$new('.points').attr('data-points', '000')
@@ -88,10 +96,14 @@ document.on('DOMContentLoaded', (e) => {
 	let boardSize = 15;
 	let numTiles = boardSize * boardSize;
 	
+	grid = Array.from({ length: boardSize }).map(c => Array.from({ length: boardSize }));
+	
 	let centerPos = Math.floor(boardSize / 2);
 	for (let t = 0; t < numTiles; ++t) {
-		let x = Math.abs(centerPos - (t % boardSize));
-		let y = Math.abs(centerPos - Math.floor(t / boardSize));
+		let _x = (t % boardSize);
+		let _y = Math.floor(t / boardSize);
+		let x = Math.abs(centerPos - _x);
+		let y = Math.abs(centerPos - _y);
 		let d = Math.abs(x - y);
 		
 		let className = '';
@@ -113,9 +125,12 @@ document.on('DOMContentLoaded', (e) => {
 			className = '.x-2-letter';
 		
 		let tile = createTile(null, className);
+		grid[_x][_y] = tile;
 		boardTiles.push(tile);
 		boardElem.append(tile);
 	}
+	
+	console.log(grid);
 	
 	for (let word of shuffle(words))
 		addWord(word.toUpperCase());
@@ -238,9 +253,33 @@ let setWordPos = (word, x, y, before = null, execIfNull = false) => {
 };
 
 let snapToTile = (word) => {
+	let startPos = word.getBoundingClientRect();
 	word.pos.x = word.pos.y = 0;
 	let firstTile = word.letters[0].tileHovering;
-	setWordPos(word, firstTile.pos.x, firstTile.pos.y, null, true);
+	let percent = 0.0;
+	let then = performance.now();
+	console.log(startPos, firstTile.pos);
+	let move = (now) => {
+		let dt = Math.max(0, (now - then)) / 1000;
+		then = now;
+		percent += 5.0 * dt;
+		if (percent < 1.0)
+			window.requestAnimationFrame(move);
+		else {
+			percent = 1.0;
+			assignToGrid(word);
+			word.remove();
+		}
+		
+		let t = Math.easeInOut(Math.easeOut(percent));
+		setWordPos(word,
+			Math.lerp(startPos.x, firstTile.pos.x, t),
+			Math.lerp(startPos.y, firstTile.pos.y, t),
+			null, true);
+				
+		//console.log(dt, percent);
+	};
+	window.requestAnimationFrame(move);
 };
 
 let assignToGrid = (word) => {
@@ -406,8 +445,8 @@ let onWordDrag = (word, mx, my) => {
 let endWordDrag = (word) => {
 	if (dragWordValidPlacement) {
 		snapToTile(word);
-		assignToGrid(word);
-		word.remove();
+		//assignToGrid(word);
+		//word.remove();
 	} else {
 		returnToHand(word);
 	}
@@ -418,6 +457,7 @@ let endWordDrag = (word) => {
 		tile.removeClass('word-hovering');
 };
 
+let wordElems = [];
 let addWord = (word) => {
 	let wordElem =
 		$new('.word')
@@ -437,4 +477,6 @@ let addWord = (word) => {
 		wordElem.letters.push(letter);
 		wordElem.append(letter);
 	}
+	
+	wordElems.push(wordElem);
 };
