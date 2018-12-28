@@ -1,14 +1,23 @@
 @import url(http://weloveiconfonts.com/api/?family=typicons);
 
 c_black = #2f2f69
-
 c_bg = #685B87
+
+@font-face
+	font-family: 'Consolas'
+	src: url('consolas.eot')
+	src: url('consolas.eot?#iefix') format('embedded-opentype'),
+		 url('consolas.woff') format('woff'),
+		 url('consolas.ttf') format('truetype'),
+		 url('consolas.svg#Consolas') format('svg')
+	font-weight: normal
+	font-style: normal
 
 *, *:before, *:after
 	box-sizing: border-box
 
 html
-	font-family: Consolas, monaco, monospace
+	font-family: 'Consolas', cursive
 
 [class*="typicons-"]::before
 	font-family: 'typicons', sans-serif;
@@ -221,6 +230,7 @@ tColors[2] = purple
 tColors[3] = black
 
 stringThickness = 70%
+stringThickness = 0%
 
 @keyframes tileScale
 	from
@@ -348,5 +358,5 @@ stringThickness = 70%
 		content: attr(data-points)
 	&:not(.has-letter)
 		opacity: 0
-		animation: tileScale 0.5s forwards
+		animation: tileScale 0.4s forwards
 		animation-timing-function: cubic-bezier(0.175, 0.885, 0.32, 2.275)
