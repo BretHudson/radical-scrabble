@@ -46,7 +46,7 @@ Math.easeIn = t => t * t;
 Math.easeOut = t => -t * (t - 2);
 Math.easeInOut = t => (t <= .5) ? (t * t * 2) : (1 - (--t) * t * 2);
 
-words = words.slice(0, 1);
+//words = words.slice(0, 1);
 let grid;
 
 let pointsElem;
@@ -135,8 +135,6 @@ document.on('DOMContentLoaded', (e) => {
 		boardTiles.push(tile);
 		boardElem.append(tile);
 	}
-	
-	console.log(grid);
 	
 	for (let word of shuffle(words))
 		addWord(word.toUpperCase());
@@ -264,7 +262,8 @@ let snapToTile = (word) => {
 	let firstTile = word.letters[0].tileHovering;
 	let percent = 0.0;
 	let then = performance.now();
-	console.log(startPos, firstTile.pos);
+	let dx = startPos.x - firstTile.pos.x;
+	let dy = startPos.y - firstTile.pos.y;
 	let move = (now) => {
 		let dt = Math.max(0, (now - then)) / 1000;
 		then = now;
@@ -282,8 +281,6 @@ let snapToTile = (word) => {
 			Math.lerp(startPos.x, firstTile.pos.x, t),
 			Math.lerp(startPos.y, firstTile.pos.y, t),
 			null, true);
-				
-		//console.log(dt, percent);
 	};
 	window.requestAnimationFrame(move);
 };
