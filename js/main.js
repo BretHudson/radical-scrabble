@@ -20,7 +20,7 @@ let boardTiles = [];
 
 let version = '0.2.3';
 
-let words = [
+let dictionary = [
 	'awesome',
 	'bitchin',
 	'boss',
@@ -34,6 +34,7 @@ let words = [
 	'mint',
 	'radical',
 	'righteous',
+	'rockin',
 	'sweet',
 	'sick',
 	'tight',
@@ -46,7 +47,7 @@ Math.easeIn = t => t * t;
 Math.easeOut = t => -t * (t - 2);
 Math.easeInOut = t => (t <= .5) ? (t * t * 2) : (1 - (--t) * t * 2);
 
-//words = words.slice(0, 1);
+//dictionary = dictionary.slice(0, 1);
 let grid;
 
 let pointsElem;
@@ -146,7 +147,7 @@ document.on('DOMContentLoaded', (e) => {
 		boardElem.append(tile);
 	}
 	
-	for (let word of shuffle(words))
+	for (let word of shuffle(dictionary))
 		addWord(word.toUpperCase());
 	
 	let boardWidth = 100, boardHalfWidth = boardWidth >> 1;
