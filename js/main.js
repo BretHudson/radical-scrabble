@@ -54,6 +54,10 @@ let totalPoints = 0;
 
 const LETTER_POINTS = { A: 1, B: 3, C: 3, D: 2, E: 1, F: 4, G: 2, H: 4, I: 1, J: 8, K: 5, L: 1, M: 3, N: 1, O: 1, P: 3, Q: 10, R: 1, S: 1, T: 1, U: 1, V: 4, W: 4, X: 8, Y: 4, Z: 10 };
 
+let actionUndo = () => {
+	console.log('undo');
+};
+
 document.on('DOMContentLoaded', (e) => {
 	document.head[0].append(style);
 	
@@ -64,9 +68,15 @@ document.on('DOMContentLoaded', (e) => {
 			.children(
 				$new('.title'),
 				$new('.nav').children(
-					$new('span.undo').child($new('i').class('typicons-back')),
-					$new('span.').child($new('i').class('typicons-info')),
-					$new('span').child($new('i').class('typicons-refresh')),
+					$new('span.undo')
+						.child($new('i').class('typicons-back'))
+						.on('click', actionUndo),
+					$new('span.')
+						.child($new('i').class('typicons-info'))
+						/*.on('click', actionInfo)*/,
+					$new('span')
+						.child($new('i').class('typicons-refresh'))
+						/*.on('click', actionRestart)*/,
 				),
 				$new('.points').attr('data-points', '000')
 			)
@@ -108,26 +118,26 @@ document.on('DOMContentLoaded', (e) => {
 		
 		let className = '';
 		if ((x === 0) && (y === 0))
-			className = '.wild';
+			className = 'wild';
 		else if (((x === 7) || (y === 7)) && (d % 7 === 0))
-			className = '.x-3-word';
+			className = 'x-3-word';
 		else if ((x === y) && (x >= 3) && (x <= 6))
-			className = '.x-2-word';
+			className = 'x-2-word';
 		else if ((d === 4) && ((x === 6) || (y === 6)))
-			className = '.x-3-letter';
+			className = 'x-3-letter';
 		else if ((x === y) && (x === 2))
-			className = '.x-3-letter';
+			className = 'x-3-letter';
 		else if ((d === 3) && ((x === 7) || (y === 7)))
-			className = '.x-2-letter';
+			className = 'x-2-letter';
 		else if ((d === 4) && ((x === 5) || (y === 5) || (x === 4) || (y === 4)))
-			className = '.x-2-letter';
+			className = 'x-2-letter';
 		else if ((x === y) && (x === 1))
-			className = '.x-2-letter';
+			className = 'x-2-letter';
 		
 		let speed = 0.04;
 		let delay = (x + y) * speed;
 		if (className !== '')
-			delay += 12 * speed;
+			delay += 8 * speed;
 		
 		let tile = createTile(null, className);
 		tile.style.animationDelay = tile.q('.background').style.animationDelay = delay + 's';
@@ -229,14 +239,22 @@ let shuffle = (arr) => {
 	return arr;
 };
 
+let recycledTiles = [];
+let recycleTile = (tile) => {
+	tile.remove();
+	recycledTiles.push(tile);
+};
+
 let createTile = (letter, className = '') => {
 	let prefix = (letter) ? 'has' : 'no'
-	return $new(`.tile${className}.${prefix}-letter`)
-			.children($new('.strings'), $new('.background'))
-			.attr('data-letter', letter || '')
-			.attr('data-points', letter ? LETTER_POINTS[letter] : '')
-			.attr('data-type', className.replace('.', '').replace('premium', ''))
-			.element();
+	let tile = recycledTiles.shift() || $new().children($new('.strings'), $new('.background')).element();
+	
+	tile.className = `tile ${className} ${prefix}-letter`;
+	tile.dataset.letter = letter || '';
+	tile.dataset.points = letter ? LETTER_POINTS[letter] : '';
+	tile.dataset.type = className;
+	
+	return tile;
 };
 
 let overlapTile = (tile, x, y) => {
@@ -256,6 +274,47 @@ let setWordPos = (word, x, y, before = null, execIfNull = false) => {
 	});
 };
 
+let removeWord = (word) => {
+	word.remove();
+};
+
+let keyframesWordPlace = {
+	0: {
+		'transform': 'scale(1)',
+	},
+	50: {
+		'transform': 'scale(2)',
+		'opacity': '0.75'
+	},
+	100: {
+		'transform': 'scale(1)',
+		'opacity': '1.0'
+	}
+};
+
+let animateWordIntoBoard = (word) => {
+	
+	let tiles = word.q('.tile');
+	let delay = 75;
+	let duration = delay * 5;
+	
+	word.addClass('on-grid');
+	setTimeout(() => {
+		let tile;
+		for (let t = 0, n = tiles.length; (t < n) && (tile = tiles[t]); ++t) {
+			Transition.animate(tile, keyframesWordPlace, duration, {
+				delay: t * delay
+			});
+		}
+		
+		setTimeout(() => {
+			assignToGrid(word);
+			removeWord(word);
+			word.removeClass('on-grid');
+		}, duration + tiles.length * delay);
+	}, 100);
+};
+
 let snapToTile = (word) => {
 	let startPos = word.getBoundingClientRect();
 	word.pos.x = word.pos.y = 0;
@@ -267,15 +326,11 @@ let snapToTile = (word) => {
 	let move = (now) => {
 		let dt = Math.max(0, (now - then)) / 1000;
 		then = now;
-		percent += 5.0 * dt;
+		percent += 10.0 * dt;
 		if (percent < 1.0)
 			window.requestAnimationFrame(move);
-		else {
-			percent = 1.0;
-			assignToGrid(word);
-			word.remove();
-		}
-		
+		else
+			animateWordIntoBoard(word);
 		let t = Math.easeInOut(Math.easeOut(percent));
 		setWordPos(word,
 			Math.lerp(startPos.x, firstTile.pos.x, t),
@@ -356,7 +411,7 @@ let dragStartPos = { x: 0, y: 0 };
 let dragPos = { x: 0, y: 0 };
 let dragWord = null;
 let beginWordDrag = (word, mx, my) => {
-	word.removeClass('on-grid');
+	//word.removeClass('on-grid');
 	
 	dragStartPos.x = dragPos.x = mx;
 	dragStartPos.y = dragPos.y = my;
@@ -449,7 +504,7 @@ let endWordDrag = (word) => {
 	if (dragWordValidPlacement) {
 		snapToTile(word);
 		//assignToGrid(word);
-		//word.remove();
+		//removeWord(word);
 	} else {
 		returnToHand(word);
 	}
