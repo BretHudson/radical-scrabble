@@ -149,12 +149,12 @@ document.on('DOMContentLoaded', (e) => {
 	for (let word of shuffle(words))
 		addWord(word.toUpperCase());
 	
-	let boardWidth = 100, boardHalfWidth = boardWidth / 2;
+	let boardWidth = 100, boardHalfWidth = boardWidth >> 1;
 	let emWidth = `${boardWidth}em`;
 	let emLeft = `calc(50% - ${boardHalfWidth}em)`;
 	
-	headerElem.style.width = footerElem.style.width = emWidth;
-	headerElem.style.left = footerElem.style.left = emLeft;
+	headerElem.style.width = footerElem.style.width = emWidth; //`${boardWidth * 2}em`;
+	headerElem.style.left = footerElem.style.left = emLeft; //`calc(50% - ${boardWidth}em)`;
 	
 	boardElem.style.width = emWidth;
 	boardElem.style.left = emLeft;
@@ -172,10 +172,28 @@ document.on('DOMContentLoaded', (e) => {
 		// Resize the board
 		let navHeight = 9;
 		let tileSize = boardWidth / boardSize;
-		let size = Math.min(
-			window.innerWidth / (boardSize + 0.5) / tileSize,
-			window.innerHeight / (navHeight + boardSize) / tileSize
-		);
+		let ratio = window.innerWidth / window.innerHeight;
+		
+		let landscape = ratio > 1.05;
+		let width, height;
+		if (landscape) {
+			width = window.innerWidth / ((boardSize << 1) + 1.5) / tileSize;
+			height = window.innerHeight / (3.0 + boardSize) / tileSize;
+		} else {
+			width = window.innerWidth / (boardSize + 0.5) / tileSize;
+			height = window.innerHeight / (navHeight + boardSize) / tileSize;
+		}
+		
+		document.body.addClass((landscape) ? 'landscape' : 'portrait');
+		document.body.removeClass((landscape) ? 'portrait' : 'landscape');
+		
+		let size = Math.min(width, height);
+		if (size === width) {
+			console.log('hi');
+		} else {
+			console.log('bye');
+		}
+		
 		if (IS_FIREFOX)
 			size = Math.floor(size);
 		document.body.style.fontSize = `${size}px`;
@@ -225,6 +243,7 @@ document.on('DOMContentLoaded', (e) => {
 });
 
 let shuffle = (arr) => {
+	return arr;
 	let curIndex = arr.length, temp, randomIndex;
 	
 	while (curIndex > 0) {
@@ -293,7 +312,6 @@ let keyframesWordPlace = {
 };
 
 let animateWordIntoBoard = (word) => {
-	
 	let tiles = word.q('.tile');
 	let delay = 75;
 	let duration = delay * 5;

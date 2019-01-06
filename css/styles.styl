@@ -1,6 +1,6 @@
 @import url(http://weloveiconfonts.com/api/?family=typicons);
 
-c_black = #2f2f69
+c_board = #2f2f69
 c_bg = #685B87
 
 @font-face
@@ -20,7 +20,7 @@ html
 	font-family: 'Consolas', cursive
 
 [class*="typicons-"]::before
-	font-family: 'typicons', sans-serif;
+	font-family: 'typicons', sans-serif
 
 body
 	margin: 0
@@ -29,6 +29,10 @@ body
 	overflow: hidden
 	text-transform: uppercase
 	font-size: 0 // NOTE(bret): Set to 0 so we don't get any odd zooming on mobile on page load (trust me here, remove it and watch everything fall apart)
+	&.landscape
+		background-color: #800
+	&.portrait
+		background-color: #008
 
 a
 	color: white
@@ -154,8 +158,23 @@ header
 .board
 	position: absolute
 	line-height: 0
-	background-color: c_black
+	background-color: c_board
 	padding: 1.5em
+	width: 100em
+	height: 100em
+	.landscape &
+		left: unset !important
+		right: 50% !important
+		top: 52.5% !important
+		transform: translateY(-50%)
+
+.words
+	.landscape &
+		padding: 1.5em
+		left: 50% !important
+		top: 52.5% !important
+		transform: translateY(-50%)
+		height: 100em !important
 
 .words
 	position: fixed
@@ -163,11 +182,13 @@ header
 	overflow: hidden
 	border: 1.5em solid #68511C
 	border: 1.5em solid #c9c0a3
-	background-color: #c9c0a3
+	border: 1.5em solid #311
+	background-color: #f9f0e3
+	background-color: #633
 	.words-holder
-		background-color: #8b6914
+		/*background-color: #8b6914
 		background-color: #3F3833
-		background-color: #f9f0e3
+		background-color: #f9f0e3*/
 		width: 100%
 		height: 100%
 		overflow-y: scroll
@@ -217,6 +238,7 @@ header
 				position: relative
 				border-radius: 1.2em
 				background-color: #543
+				background-color: #ccc
 		.horizontal
 			width: 10em
 			&::after
@@ -275,7 +297,7 @@ stringThickness = 0%
 		.has-letter&
 			//background-color: #deb887
 			background-color: #C5A064
-			border: 1pt solid #8b6914
+			border: 0.15em solid #8b6914
 			opacity: 1.0
 		.no-letter&
 			.wild&
