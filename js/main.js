@@ -18,7 +18,7 @@ let boardElem, wordsHolderElem;
 
 let boardTiles = [];
 
-let version = '0.2.3';
+let version = '0.2.4';
 
 let dictionary = [
 	'awesome',
@@ -175,7 +175,7 @@ document.on('DOMContentLoaded', (e) => {
 		let tileSize = boardWidth / boardSize;
 		let ratio = window.innerWidth / window.innerHeight;
 		
-		let landscape = ratio > 1.05;
+		let landscape = ratio > 1.25;
 		let width, height;
 		if (landscape) {
 			width = window.innerWidth / ((boardSize << 1) + 1.5) / tileSize;
