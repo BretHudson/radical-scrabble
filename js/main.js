@@ -303,7 +303,7 @@ let keyframesWordPlace = {
 		'transform': 'scale(1)',
 	},
 	50: {
-		'transform': 'scale(2)',
+		'transform': 'scale(1.6)',
 		'opacity': '0.75'
 	},
 	100: {
@@ -314,7 +314,7 @@ let keyframesWordPlace = {
 
 let animateWordIntoBoard = (word) => {
 	let tiles = word.q('.tile');
-	let delay = 75;
+	let delay = 60;
 	let duration = delay * 5;
 	
 	word.addClass('on-grid');
