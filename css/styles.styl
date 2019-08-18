@@ -324,19 +324,21 @@ stringThickness = 50%
 		right: 0
 		bottom: 0
 		opacity: 0.85
-		.vertical&::before, .horizontal&::after
+		&::before, &::after
 			content: ''
 			position: absolute
 			transform: translate(-50%, -50%)
 			background-color: #C5A064
 			z-index: 0
+			width: 0%
+			height: 0%
 			left: 50%
 			top: 50%
+			$length = 0.2s
+			transition: width $length, height $length, left $length, top $length
+			transition-delay: inherit
 			.word-hovering&
-				opacity: 0.3
-				background-color: lime
-				.invalid&
-					background-color: red
+				opacity: 0
 		.vertical&::before
 			width: stringThickness
 			height: 100%

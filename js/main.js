@@ -18,7 +18,7 @@ let boardElem, wordsHolderElem;
 
 let boardTiles = [];
 
-let version = '0.2.4';
+let version = '0.2.5';
 
 let dictionary = [
 	'awesome',
@@ -141,6 +141,7 @@ document.on('DOMContentLoaded', (e) => {
 			delay += 8 * speed;
 		
 		let tile = createTile(null, className);
+		// TODO(bret): Remove this animation delay at some point!
 		tile.style.animationDelay = tile.q('.background').style.animationDelay = delay + 's';
 		grid[_x][_y] = tile;
 		boardTiles.push(tile);
@@ -170,6 +171,7 @@ document.on('DOMContentLoaded', (e) => {
 	style.textContent = `.tile { width: ${tileSize}em; height: ${tileSize}em; }`;
 	
 	const resize = () => {
+		// TODO(bret): Make sure we re-position all the tiles!
 		// Resize the board
 		let navHeight = 9;
 		let tileSize = boardWidth / boardSize;
@@ -317,13 +319,33 @@ let animateWordIntoBoard = (word) => {
 	let delay = 60;
 	let duration = delay * 5;
 	
+	// TODO(bret): Add strings here!
+	
 	word.addClass('on-grid');
 	setTimeout(() => {
 		let tile;
-		for (let t = 0, n = tiles.length; (t < n) && (tile = tiles[t]); ++t) {
+		for (let t = 0, tile = null, n = tiles.length; (t < n) && (tile = tiles[t]); ++t) {
 			Transition.animate(tile, keyframesWordPlace, duration, {
 				delay: t * delay
 			});
+			
+			let delayStr = `${t * delay / 1000}s`;
+			let gridTile = tile.tileHovering;
+			gridTile.firstChild.style.transitionDelay = `${delayStr}, ${delayStr}, ${delayStr}, ${delayStr}`;
+			if (word.hasClass('rotated')) {
+				gridTile.addClass('vertical');
+				if (t === 0)
+					gridTile.addClass('top');
+				if (t === word.letters.length - 1)
+					gridTile.addClass('bottom');
+			} else {
+				 gridTile.addClass('horizontal');
+				if (t === 0)
+					gridTile.addClass('left');
+				if (t === word.letters.length - 1)
+					gridTile.addClass('right');
+			}
+			
 		}
 		
 		setTimeout(() => {
@@ -362,7 +384,7 @@ let snapToTile = (word) => {
 let assignToGrid = (word) => {
 	let multiplier = 1;
 	let points = 0;
-	let lll = word.letters[0].tileHovering
+	let lll = word.letters[0].tileHovering;
 	let index = 0;
 	for (let letter of word.letters) {
 		let tile = letter.tileHovering;
@@ -389,19 +411,6 @@ let assignToGrid = (word) => {
 		tile.removeClass('no-letter');
 		
 		tile.addClass('has-letter');
-		if (word.hasClass('rotated')) {
-			tile.addClass('vertical');
-			if (index === 0)
-				tile.addClass('top');
-			if (++index === word.letters.length)
-				tile.addClass('bottom');
-		} else {
-			 tile.addClass('horizontal');
-			if (index === 0)
-				tile.addClass('left');
-			if (++index === word.letters.length)
-				tile.addClass('right');
-		}
 	};
 	addPoints(points * multiplier);
 };
