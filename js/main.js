@@ -56,8 +56,30 @@ let totalPoints = 0;
 const LETTER_POINTS = { A: 1, B: 3, C: 3, D: 2, E: 1, F: 4, G: 2, H: 4, I: 1, J: 8, K: 5, L: 1, M: 3, N: 1, O: 1, P: 3, Q: 10, R: 1, S: 1, T: 1, U: 1, V: 4, W: 4, X: 8, Y: 4, Z: 10 };
 
 let actionUndo = () => {
-	console.log('undo');
+	// TODO(bret): Probably make sure you can't do this while something is animating
+	if (playedWords.length > 0) {
+		let word = playedWords.pop();
+		let letter, tile;
+		for (let l = 0; l < word.letters.length; ++l) {
+			letter = word.letters[l];
+			tile = letter.tileHovering;
+			let stacked = +tile.dataset.stacked - 1;
+			if (stacked === 0) {
+				resetTile(tile);
+			}
+			tile.dataset.stacked = stacked;
+		}
+		removePoints(word.points);
+		word.points = 0;
+		returnToHand(word);
+	}
+	
+	if (playedWords.length === 0) {
+		undoButton.addClass('disabled');
+	}
 };
+
+let undoButton, infoButton, resetButton;
 
 document.on('DOMContentLoaded', (e) => {
 	document.head[0].append(style);
@@ -69,13 +91,13 @@ document.on('DOMContentLoaded', (e) => {
 			.children(
 				$new('.title'),
 				$new('.nav').children(
-					$new('span.undo')
+					$new('span.disabled#undo')
 						.child($new('i').class('typicons-back'))
 						.on('click', actionUndo),
-					$new('span.')
+					$new('span.disabled#info')
 						.child($new('i').class('typicons-info'))
 						/*.on('click', actionInfo)*/,
-					$new('span')
+					$new('span.disabled#reset')
 						.child($new('i').class('typicons-refresh'))
 						/*.on('click', actionRestart)*/,
 				),
@@ -84,6 +106,10 @@ document.on('DOMContentLoaded', (e) => {
 			.element()
 	);
 	pointsElem = headerElem.q('.points');
+	
+	undoButton = headerElem.q('#undo');
+	infoButton = headerElem.q('#info');
+	resetButton = headerElem.q('#reset');
 	
 	boardElem = body.appendChild($new('.board').element());
 	let wordsElem = body.appendChild($new('.words').element());
@@ -261,6 +287,7 @@ let shuffle = (arr) => {
 	return arr;
 };
 
+// TODO(bret): Actually implement pooling
 let recycledTiles = [];
 let recycleTile = (tile) => {
 	tile.remove();
@@ -275,6 +302,30 @@ let createTile = (letter, className = '') => {
 	tile.dataset.letter = letter || '';
 	tile.dataset.points = letter ? LETTER_POINTS[letter] : '';
 	tile.dataset.type = className;
+	
+	return tile;
+};
+
+let resetTile = (tile) => {
+	tile.style.animationDelay = '0s';
+	tile.firstChild.style.transitionDelay = `0s`;
+	
+	tile.removeClass('has-letter');
+	
+	tile.removeClass('horizontal');
+	tile.removeClass('vertical');
+	
+	tile.removeClass('left');
+	tile.removeClass('right');
+	tile.removeClass('top');
+	tile.removeClass('bottom');
+	
+	tile.addClass('no-letter');
+	if (tile.dataset.type !== '')
+		tile.addClass(tile.dataset.type);
+	
+	tile.dataset.letter = '';
+	tile.dataset.points = '';
 	
 	return tile;
 };
@@ -296,8 +347,10 @@ let setWordPos = (word, x, y, before = null, execIfNull = false) => {
 	});
 };
 
+let playedWords = [];
 let removeWord = (word) => {
 	word.remove();
+	playedWords.push(word);
 };
 
 let keyframesWordPlace = {
@@ -317,9 +370,7 @@ let keyframesWordPlace = {
 let animateWordIntoBoard = (word) => {
 	let tiles = word.q('.tile');
 	let delay = 60;
-	let duration = delay * 5;
-	
-	// TODO(bret): Add strings here!
+	let duration = delay * 5;	
 	
 	word.addClass('on-grid');
 	setTimeout(() => {
@@ -331,7 +382,9 @@ let animateWordIntoBoard = (word) => {
 			
 			let delayStr = `${t * delay / 1000}s`;
 			let gridTile = tile.tileHovering;
+			gridTile.dataset.stacked = 1 + +(gridTile.dataset.stacked || 0);
 			gridTile.firstChild.style.transitionDelay = `${delayStr}, ${delayStr}, ${delayStr}, ${delayStr}`;
+			gridTile.removeClass('no-letter');
 			if (word.hasClass('rotated')) {
 				gridTile.addClass('vertical');
 				if (t === 0)
@@ -356,7 +409,7 @@ let animateWordIntoBoard = (word) => {
 	}, 100);
 };
 
-let snapToTile = (word) => {
+let alignWithGrid = (word) => {
 	let startPos = word.getBoundingClientRect();
 	word.pos.x = word.pos.y = 0;
 	let firstTile = word.letters[0].tileHovering;
@@ -384,7 +437,6 @@ let snapToTile = (word) => {
 let assignToGrid = (word) => {
 	let multiplier = 1;
 	let points = 0;
-	let lll = word.letters[0].tileHovering;
 	let index = 0;
 	for (let letter of word.letters) {
 		let tile = letter.tileHovering;
@@ -408,16 +460,23 @@ let assignToGrid = (word) => {
 		tile.removeClass('x-3-letter');
 		tile.removeClass('x-2-word');
 		tile.removeClass('x-3-word');
-		tile.removeClass('no-letter');
 		
 		tile.addClass('has-letter');
 	};
-	addPoints(points * multiplier);
+	
+	word.points = points * multiplier;
+	addPoints(word.points);
+	
+	undoButton.removeClass('disabled');
 };
 
 let addPoints = (points) => {
 	totalPoints += points;
 	pointsElem.dataset.points = ('00' + totalPoints).substr(-3);
+};
+
+let removePoints = (points) => {
+	addPoints(-points);
 };
 
 let returnToHand = (word) => {
@@ -530,9 +589,7 @@ let onWordDrag = (word, mx, my) => {
 
 let endWordDrag = (word) => {
 	if (dragWordValidPlacement) {
-		snapToTile(word);
-		//assignToGrid(word);
-		//removeWord(word);
+		alignWithGrid(word);
 	} else {
 		returnToHand(word);
 	}
@@ -545,13 +602,9 @@ let endWordDrag = (word) => {
 
 let wordElems = [];
 let addWord = (word) => {
-	let wordElem =
-		$new('.word')
-			.child($new('.buttons').children(
-				$new('.button.horizontal'),
-				$new('.button.vertical')
-			))
-			.element();
+	let wordElem = $new('.word').element();
+	wordElem.points = 0;
+	wordElem.str = word;
 	wordElem.letters = [];
 	wordElem.order = wordsHolderElem.children.length;
 	wordElem.pos = { x: 0, y: 0 };
@@ -563,6 +616,13 @@ let addWord = (word) => {
 		wordElem.letters.push(letter);
 		wordElem.append(letter);
 	}
+	
+	let buttons = $new('.buttons').children(
+		$new('.button.horizontal'),
+		$new('.button.vertical')
+	);
+	
+	wordElem.append(buttons);
 	
 	wordElems.push(wordElem);
 };

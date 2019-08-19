@@ -154,6 +154,9 @@ header
 				left: 50%
 			&:hover
 				opacity: 1
+			&.disabled
+				&, &:hover
+					opacity: 0.25
 
 .board
 	position: absolute
@@ -391,3 +394,6 @@ stringThickness = 50%
 		opacity: 0
 		animation: tileScale 0.4s forwards
 		animation-timing-function: cubic-bezier(0.175, 0.885, 0.32, 2.0)
+	&.no-letter
+		.strings
+			opacity: 0
