@@ -22,6 +22,7 @@ let version = '0.2.5';
 
 let dictionary = [
 	'awesome',
+	//'baller',
 	'bitchin',
 	'boss',
 	'cool',
@@ -31,6 +32,7 @@ let dictionary = [
 	'gnarly',
 	'groovy',
 	//'hip',
+	//'lit',
 	'mint',
 	'radical',
 	'righteous',
@@ -65,7 +67,7 @@ let actionUndo = () => {
 			tile = letter.tileHovering;
 			let stacked = +tile.dataset.stacked - 1;
 			if (stacked === 0) {
-				resetTile(tile);
+				resetTile(tile, 60 * (word.letters.length - (word.letters.length - l)));
 			}
 			tile.dataset.stacked = stacked;
 		}
@@ -306,8 +308,8 @@ let createTile = (letter, className = '') => {
 	return tile;
 };
 
-let resetTile = (tile) => {
-	tile.style.animationDelay = '0s';
+let resetTile = (tile, delay) => {
+	tile.style.animationDelay = `${delay}ms`;
 	tile.firstChild.style.transitionDelay = `0s`;
 	
 	tile.removeClass('has-letter');
