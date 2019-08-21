@@ -2,6 +2,16 @@ $c_board = #2f2f69
 $c_bg = #685B87
 $c_tile_letter = #C5A064
 
+// #6666ff
+$tColors = 0, 0, 0, 0
+$tColors[0] = orange
+$tColors[1] = red
+$tColors[2] = purple
+$tColors[3] = black
+
+$stringThickness = 70%
+$stringThickness = 50%
+
 @font-face
 	font-family: 'Consolas'
 	src: url('consolas.eot')
@@ -136,6 +146,9 @@ header
 			border: 0.12em solid rgba(255, 255, 255, 0.6)
 			margin: 0 0.15em
 			opacity: 0.7
+			
+			background-color: rgba(#435, 0.4)
+			
 			cursor: pointer
 			transition: opacity 0.2s
 			i
@@ -145,12 +158,18 @@ header
 				left: 50%
 				top: 50%
 				transform: translate(-50%, -50%)
+				--fa-primary-color: white
+				--fa-secondary-color: $c_tile_letter
+				--fa-secondary-opacity: 1.0
 			.home
 				font-size: 0.85em
 				top: 50%
 				left: 50%
 			.info
 				font-size: 0.85em
+				top: 50%
+				left: 50%
+			.settings
 				top: 50%
 				left: 50%
 			.undo
@@ -247,16 +266,6 @@ header
 			&:hover
 				opacity: 1.0
 
-// #6666ff
-tColors = 0, 0, 0, 0
-tColors[0] = orange
-tColors[1] = red
-tColors[2] = purple
-tColors[3] = black
-
-stringThickness = 70%
-stringThickness = 50%
-
 @keyframes tileScale
 	from
 		transform: scale(0)
@@ -301,13 +310,13 @@ stringThickness = 50%
 			.wild&
 				background-color: yellow
 			.x-2-letter&
-				background-color: tColors[0]
+				background-color: $tColors[0]
 			.x-3-letter&
-				background-color: tColors[1]
+				background-color: $tColors[1]
 			.x-2-word&
-				background-color: tColors[2]
+				background-color: $tColors[2]
 			.x-3-word&
-				background-color: tColors[3]
+				background-color: $tColors[3]
 		.has-letter&,
 		.no-letter&
 			.word-hovering&
@@ -338,7 +347,7 @@ stringThickness = 50%
 			.word-hovering&
 				opacity: 0
 		.vertical&::before
-			width: stringThickness
+			width: $stringThickness
 			height: 100%
 			.top:not(.bottom)&
 				height: 50%
@@ -348,7 +357,7 @@ stringThickness = 50%
 				top: 25%
 		.horizontal&::after
 			width: 100%
-			height: stringThickness
+			height: $stringThickness
 			.left:not(.right)&
 				width: 50%
 				left: 75%
