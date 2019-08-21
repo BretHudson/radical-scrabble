@@ -1,7 +1,6 @@
-@import url(//weloveiconfonts.com/api/?family=typicons);
-
-c_board = #2f2f69
-c_bg = #685B87
+$c_board = #2f2f69
+$c_bg = #685B87
+$c_tile_letter = #C5A064
 
 @font-face
 	font-family: 'Consolas'
@@ -18,13 +17,14 @@ c_bg = #685B87
 
 html
 	font-family: 'Consolas', cursive
+	font-display: swap
 
-[class*="typicons-"]::before
-	font-family: 'typicons', sans-serif
+html, body
+	height: 100%
 
 body
 	margin: 0
-	background-color: c_bg
+	background-color: $c_bg
 	color: white
 	overflow: hidden
 	text-transform: uppercase
@@ -136,21 +136,26 @@ header
 			border: 0.12em solid rgba(255, 255, 255, 0.6)
 			margin: 0 0.15em
 			opacity: 0.7
+			cursor: pointer
 			transition: opacity 0.2s
 			i
-				font-size: 1.25em
+				font-size: 1.0em
 				position: absolute
 				font-style: normal
-				transform: translate(-50%, -50%)
-			.typicons-back
-				font-size: 1.1em
-				top: 63%
 				left: 50%
-			.typicons-info
-				top: 68%
-				left: 51%
-			.typicons-refresh
-				top: 65%
+				top: 50%
+				transform: translate(-50%, -50%)
+			.home
+				font-size: 0.85em
+				top: 50%
+				left: 50%
+			.info
+				font-size: 0.85em
+				top: 50%
+				left: 50%
+			.undo
+				font-size: 0.8em
+				top: 50%
 				left: 50%
 			&:hover
 				opacity: 1
@@ -161,7 +166,7 @@ header
 .board
 	position: absolute
 	line-height: 0
-	background-color: c_board
+	background-color: $c_board
 	padding: 1.5em
 	width: 100em
 	height: 100em
@@ -228,29 +233,19 @@ header
 		transform: translate(100%, -50%)
 		z-index: 6
 		white-space: nowrap
-		.button
-			position: relative
-			display: inline-block
-			height: 10em
-			margin: 0 0.5em
+		padding-left: 1.5em
+		i
+			--fa-primary-color: white
+			--fa-secondary-color: $c_tile_letter
+			--fa-secondary-opacity: 1.0
+			font-size: 6.35em
+			margin: 0 0.1em
+			color: $c_tile_letter
+			opacity: 0.5
+			transition: opacity 0.2s
 			cursor: grab
-			&::after
-				content: ''
-				width: 100%
-				display: block
-				position: relative
-				border-radius: 1.2em
-				background-color: #543
-				background-color: #ccc
-		.horizontal
-			width: 10em
-			&::after
-				height: 50%
-				top: 25%
-		.vertical
-			width: 5em
-			&::after
-				height: 100%
+			&:hover
+				opacity: 1.0
 
 // #6666ff
 tColors = 0, 0, 0, 0
@@ -299,7 +294,7 @@ stringThickness = 50%
 			animation: tileRotate1 1s*/
 		.has-letter&
 			//background-color: #deb887
-			background-color: #C5A064
+			background-color: $c_tile_letter
 			border: 0.15em solid #8b6914
 			opacity: 1.0
 		.no-letter&
@@ -331,7 +326,7 @@ stringThickness = 50%
 			content: ''
 			position: absolute
 			transform: translate(-50%, -50%)
-			background-color: #C5A064
+			background-color: $c_tile_letter
 			z-index: 0
 			width: 0%
 			height: 0%

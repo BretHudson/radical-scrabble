@@ -75,10 +75,6 @@ let actionUndo = () => {
 		word.points = 0;
 		returnToHand(word);
 	}
-	
-	if (playedWords.length === 0) {
-		undoButton.addClass('disabled');
-	}
 };
 
 let undoButton, infoButton, resetButton;
@@ -93,15 +89,18 @@ document.on('DOMContentLoaded', (e) => {
 			.children(
 				$new('.title'),
 				$new('.nav').children(
-					$new('span.disabled#undo')
-						.child($new('i').class('typicons-back'))
-						.on('click', actionUndo),
-					$new('span.disabled#info')
-						.child($new('i').class('typicons-info'))
+					$new('span#home')
+						.child($new('i').class('home fad fa-home-alt'))
+						/*.on('click', actionHome)*/,
+					$new('span#info')
+						.child($new('i').class('info fad fa-info-square'))
 						/*.on('click', actionInfo)*/,
-					$new('span.disabled#reset')
-						.child($new('i').class('typicons-refresh'))
-						/*.on('click', actionRestart)*/,
+					$new('span#settings')
+						.child($new('i').class('settings fad fa-sliders-h-square'))
+						/*.on('click', actionSettings)*/,
+					$new('span#undo')
+						.child($new('i').class('undo fad fa-undo-alt'))
+						.on('click', actionUndo),
 				),
 				$new('.points').attr('data-points', '000')
 			)
@@ -468,8 +467,6 @@ let assignToGrid = (word) => {
 	
 	word.points = points * multiplier;
 	addPoints(word.points);
-	
-	undoButton.removeClass('disabled');
 };
 
 let addPoints = (points) => {
@@ -620,8 +617,8 @@ let addWord = (word) => {
 	}
 	
 	let buttons = $new('.buttons').children(
-		$new('.button.horizontal'),
-		$new('.button.vertical')
+		$new('i').class('button horizontal fad fa-arrow-alt-square-right'),
+		$new('i').class('button vertical fad fa-arrow-alt-square-down')
 	);
 	
 	wordElem.append(buttons);
