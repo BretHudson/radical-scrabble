@@ -609,12 +609,15 @@ let addWord = (word) => {
 	wordElem.pos = { x: 0, y: 0 };
 	wordsHolderElem.append(wordElem);
 	
+	let totalPoints = 0;
 	for (let letter of word) {
+		totalPoints += LETTER_POINTS[letter] || 0;
 		letter = createTile(letter);
 		letter.center = { x: 0, y: 0 };
 		wordElem.letters.push(letter);
 		wordElem.append(letter);
 	}
+	wordElem.attr('data-points', totalPoints);
 	
 	let buttons = $new('.buttons').children(
 		$new('i').class('button horizontal fad fa-arrow-alt-square-right'),
