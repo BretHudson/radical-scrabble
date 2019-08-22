@@ -253,6 +253,11 @@ document.on('DOMContentLoaded', (e) => {
 	window.on('touchstart', (e) => { dragBegin(e, e.touches[0]); }, { passive: false });
 	
 	let dragProgress = (e, e2) => {
+		if ((e.buttons === 0) && (dragWord !== null)) {
+			returnToHand(dragWord);
+			dragWord = null;
+		}
+		
 		if (dragWord !== null) {
 			e.preventDefault();
 			onWordDrag(dragWord, e2.clientX, e2.clientY);
