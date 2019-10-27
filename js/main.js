@@ -1,5 +1,5 @@
 // NOTE(bret): Thanks to Ian Jones for providing a bit of the boilerplate code here from https://github.com/WITS/regretris/
-let userAgent = navigator.userAgent;
+const userAgent = navigator.userAgent;
 const IS_TOUCH_DEVICE = !!(('ontouchstart' in window) || window.DocumentTouch && document instanceof DocumentTouch);
 const IS_MOBILE = /(iPhone|iPod|iPad|Android|BlackBerry)/i.test(userAgent);
 const IS_FIREFOX = (/\bfirefox\//i.test(userAgent) &&
@@ -13,14 +13,11 @@ const IS_WEBKIT = (IS_CHROME || IS_SAFARI || IS_OPERA);
 const IS_MSIE = (/\b(?:MSIE|Trident)\b/i.test(userAgent));
 const IS_EDGE = (userAgent.indexOf("Edge") != -1);
 
-let style = $new('style[type=text/css]').element();
-let boardElem, wordsHolderElem;
+const boardTiles = [];
 
-let boardTiles = [];
+const version = '0.2.5';
 
-let version = '0.2.5';
-
-let dictionary = [
+const dictionary = [
 	'awesome',
 	//'baller',
 	'bitchin',
@@ -44,6 +41,9 @@ let dictionary = [
 	'wicked',
 ];
 
+const style = $new('style[type=text/css]').element();
+let boardElem, wordsHolderElem;
+
 Math.lerp = (a, b, t) => (b - a) * t + a;
 Math.easeIn = t => t * t;
 Math.easeOut = t => -t * (t - 2);
@@ -61,15 +61,15 @@ let actionUndo = () => {
 	// TODO(bret): Probably make sure you can't do this while something is animating
 	if (playedWords.length > 0) {
 		let word = playedWords.pop();
-		let letter, tile;
-		for (let l = 0; l < word.letters.length; ++l) {
-			letter = word.letters[l];
-			tile = letter.tileHovering;
-			let stacked = +tile.dataset.stacked - 1;
+		let tile, tileHover;
+		for (let l = 0; l < word.tiles.length; ++l) {
+			tile = word.tiles[l];
+			tileHover = tile.tileHovering;
+			let stacked = +tileHover.dataset.stacked - 1;
 			if (stacked === 0) {
-				resetTile(tile, 60 * (word.letters.length - (word.letters.length - l)));
+				resetTile(tileHover, 60 * (word.tiles.length - (word.tiles.length - l)));
 			}
-			tile.dataset.stacked = stacked;
+			tileHover.dataset.stacked = stacked;
 		}
 		removePoints(word.points);
 		word.points = 0;
@@ -162,12 +162,12 @@ document.on('DOMContentLoaded', (e) => {
 		else if ((x === y) && (x === 1))
 			className = 'x-2-letter';
 		
-		let speed = 0.04;
+		const speed = 0.04;
 		let delay = (x + y) * speed;
 		if (className !== '')
 			delay += 8 * speed;
 		
-		let tile = createTile(null, className);
+		const tile = createTile(null, className);
 		// TODO(bret): Remove this animation delay at some point!
 		tile.style.animationDelay = tile.q('.background').style.animationDelay = delay + 's';
 		grid[_x][_y] = tile;
@@ -175,12 +175,12 @@ document.on('DOMContentLoaded', (e) => {
 		boardElem.append(tile);
 	}
 	
-	for (let word of shuffle(dictionary))
+	for (const word of shuffle(dictionary))
 		addWord(word.toUpperCase());
 	
-	let boardWidth = 100, boardHalfWidth = boardWidth >> 1;
-	let emWidth = `${boardWidth}em`;
-	let emLeft = `calc(50% - ${boardHalfWidth}em)`;
+	const boardWidth = 100, boardHalfWidth = boardWidth >> 1;
+	const emWidth = `${boardWidth}em`;
+	const emLeft = `calc(50% - ${boardHalfWidth}em)`;
 	
 	headerElem.style.width = footerElem.style.width = emWidth; //`${boardWidth * 2}em`;
 	headerElem.style.left = footerElem.style.left = emLeft; //`calc(50% - ${boardWidth}em)`;
@@ -194,17 +194,17 @@ document.on('DOMContentLoaded', (e) => {
 	wordsElem.style.left = emLeft;
 	wordsElem.style.top = (boardWidth + 12) + `em`;
 	
-	let tileSize = (boardWidth - 3) / boardSize; // NOTE(bret): for that 1.5em padding yo
+	const tileSize = (boardWidth - 3) / boardSize; // NOTE(bret): for that 1.5em padding yo
 	style.textContent = `.tile { width: ${tileSize}em; height: ${tileSize}em; }`;
 	
 	const resize = () => {
 		// TODO(bret): Make sure we re-position all the tiles!
 		// Resize the board
-		let navHeight = 9;
-		let tileSize = boardWidth / boardSize;
-		let ratio = window.innerWidth / window.innerHeight;
+		const navHeight = 9;
+		const tileSize = boardWidth / boardSize;
+		const ratio = window.innerWidth / window.innerHeight;
 		
-		let landscape = ratio > 1.25;
+		const landscape = ratio > 1.25;
 		let width, height;
 		if (landscape) {
 			width = window.innerWidth / ((boardSize << 1) + 1.5) / tileSize;
@@ -217,7 +217,7 @@ document.on('DOMContentLoaded', (e) => {
 		document.body.addClass((landscape) ? 'landscape' : 'portrait');
 		document.body.removeClass((landscape) ? 'portrait' : 'landscape');
 		
-		let size = Math.min(width, height);
+		const size = Math.min(width, height);
 		if (size === width) {
 			console.log('hi');
 		} else {
@@ -225,8 +225,9 @@ document.on('DOMContentLoaded', (e) => {
 		}
 		
 		if (IS_FIREFOX)
-			size = Math.floor(size);
-		document.body.style.fontSize = `${size}px`;
+			document.body.style.fontSize = `${Math.floor(size)}px`;
+		else
+			document.body.style.fontSize = `${size}px`;
 		
 		// Update each tile's position
 		window.requestAnimationFrame(() => {
@@ -239,10 +240,10 @@ document.on('DOMContentLoaded', (e) => {
 	window.on('resize', resize);
 	resize();
 	
-	let dragBegin = (e, e2) => {
+	const dragBegin = (e, e2) => {
 		if (e.target.hasClass('button')) {
 			e.preventDefault();
-			let word = e.target.parentElement.parentElement;
+			const word = e.target.parentElement.parentElement;
 			if (e.target.hasClass('vertical'))
 				word.toggleClass('rotated');
 			beginWordDrag(word, e2.clientX, e2.clientY);
@@ -252,7 +253,7 @@ document.on('DOMContentLoaded', (e) => {
 	window.on('mousedown', (e) => { dragBegin(e, e); });
 	window.on('touchstart', (e) => { dragBegin(e, e.touches[0]); }, { passive: false });
 	
-	let dragProgress = (e, e2) => {
+	const dragProgress = (e, e2) => {
 		if ((e.buttons === 0) && (dragWord !== null)) {
 			returnToHand(dragWord);
 			dragWord = null;
@@ -267,7 +268,7 @@ document.on('DOMContentLoaded', (e) => {
 	window.on('mousemove', (e) => { dragProgress(e, e); });
 	window.on('touchmove', (e) => { dragProgress(e, e.touches[0]); }, { passive: false });
 	
-	let dragEnd = () => {
+	const dragEnd = () => {
 		if (dragWord !== null) {
 			endWordDrag(dragWord);
 		}
@@ -277,7 +278,7 @@ document.on('DOMContentLoaded', (e) => {
 	window.on('touchend', dragEnd);
 });
 
-let shuffle = (arr) => {
+const shuffle = (arr) => {
 	return arr;
 	let curIndex = arr.length, temp, randomIndex;
 	
@@ -294,15 +295,16 @@ let shuffle = (arr) => {
 };
 
 // TODO(bret): Actually implement pooling
-let recycledTiles = [];
-let recycleTile = (tile) => {
+// TODO(bret): Check if we have pooling in or not...
+const recycledTiles = [];
+const recycleTile = (tile) => {
 	tile.remove();
 	recycledTiles.push(tile);
 };
 
-let createTile = (letter, className = '') => {
-	let prefix = (letter) ? 'has' : 'no'
-	let tile = recycledTiles.shift() || $new().children($new('.strings'), $new('.background')).element();
+const createTile = (letter, className = '') => {
+	const prefix = (letter) ? 'has' : 'no'
+	const tile = recycledTiles.shift() || $new().children($new('.strings'), $new('.background')).element();
 	
 	tile.className = `tile ${className} ${prefix}-letter`;
 	tile.dataset.letter = letter || '';
@@ -312,7 +314,7 @@ let createTile = (letter, className = '') => {
 	return tile;
 };
 
-let resetTile = (tile, delay) => {
+const resetTile = (tile, delay) => {
 	tile.style.animationDelay = `${delay}ms`;
 	tile.firstChild.style.transitionDelay = `0s`;
 	
@@ -336,15 +338,15 @@ let resetTile = (tile, delay) => {
 	return tile;
 };
 
-let overlapTile = (tile, x, y) => {
+const overlapTile = (tile, x, y) => {
 	return (x >= tile.pos.left) && (x < tile.pos.right) && (y >= tile.pos.top) && (y < tile.pos.bottom);
 };
 
-let doesTileHasLetter = (letter, tile) => {
+const isTileOccupied = (letter, tile) => {
 	return (tile.dataset.letter !== '');
 };
 
-let setWordPos = (word, x, y, before = null, execIfNull = false) => {
+const setWordPos = (word, x, y, before = null, execIfNull = false) => {
 	window.requestAnimationFrame(() => {
 		if (before !== null) before();
 		if ((execIfNull === false) && (dragWord === null)) return;
@@ -353,13 +355,13 @@ let setWordPos = (word, x, y, before = null, execIfNull = false) => {
 	});
 };
 
-let playedWords = [];
-let removeWord = (word) => {
+const playedWords = [];
+const removeWord = (word) => {
 	word.remove();
 	playedWords.push(word);
 };
 
-let keyframesWordPlace = {
+const keyframesWordPlace = {
 	0: {
 		'transform': 'scale(1)',
 	},
@@ -373,10 +375,10 @@ let keyframesWordPlace = {
 	}
 };
 
-let animateWordIntoBoard = (word) => {
-	let tiles = word.q('.tile');
-	let delay = 60;
-	let duration = delay * 5;	
+const animateWordIntoBoard = (word) => {
+	const tiles = word.q('.tile');
+	const delay = 60;
+	const duration = delay * 5;	
 	
 	word.addClass('on-grid');
 	setTimeout(() => {
@@ -386,8 +388,8 @@ let animateWordIntoBoard = (word) => {
 				delay: t * delay
 			});
 			
-			let delayStr = `${t * delay / 1000}s`;
-			let gridTile = tile.tileHovering;
+			const delayStr = `${t * delay / 1000}s`;
+			const gridTile = tile.tileHovering;
 			gridTile.dataset.stacked = 1 + +(gridTile.dataset.stacked || 0);
 			gridTile.firstChild.style.transitionDelay = `${delayStr}, ${delayStr}, ${delayStr}, ${delayStr}`;
 			gridTile.removeClass('no-letter');
@@ -395,13 +397,13 @@ let animateWordIntoBoard = (word) => {
 				gridTile.addClass('vertical');
 				if (t === 0)
 					gridTile.addClass('top');
-				if (t === word.letters.length - 1)
+				if (t === word.tiles.length - 1)
 					gridTile.addClass('bottom');
 			} else {
 				 gridTile.addClass('horizontal');
 				if (t === 0)
 					gridTile.addClass('left');
-				if (t === word.letters.length - 1)
+				if (t === word.tiles.length - 1)
 					gridTile.addClass('right');
 			}
 			
@@ -415,23 +417,23 @@ let animateWordIntoBoard = (word) => {
 	}, 100);
 };
 
-let alignWithGrid = (word) => {
-	let startPos = word.getBoundingClientRect();
+const alignWithGrid = (word) => {
+	const startPos = word.getBoundingClientRect();
 	word.pos.x = word.pos.y = 0;
-	let firstTile = word.letters[0].tileHovering;
+	const firstTile = word.tiles[0].tileHovering;
+	const dx = startPos.x - firstTile.pos.x;
+	const dy = startPos.y - firstTile.pos.y;
 	let percent = 0.0;
 	let then = performance.now();
-	let dx = startPos.x - firstTile.pos.x;
-	let dy = startPos.y - firstTile.pos.y;
-	let move = (now) => {
-		let dt = Math.max(0, (now - then)) / 1000;
+	const move = (now) => {
+		const dt = Math.max(0, (now - then)) / 1000;
 		then = now;
 		percent += 10.0 * dt;
 		if (percent < 1.0)
 			window.requestAnimationFrame(move);
 		else
 			animateWordIntoBoard(word);
-		let t = Math.easeInOut(Math.easeOut(percent));
+		const t = Math.easeInOut(Math.easeOut(percent));
 		setWordPos(word,
 			Math.lerp(startPos.x, firstTile.pos.x, t),
 			Math.lerp(startPos.y, firstTile.pos.y, t),
@@ -440,50 +442,49 @@ let alignWithGrid = (word) => {
 	window.requestAnimationFrame(move);
 };
 
-let assignToGrid = (word) => {
+const assignToGrid = (word) => {
 	let multiplier = 1;
 	let points = 0;
-	let index = 0;
-	for (let letter of word.letters) {
-		let tile = letter.tileHovering;
-		tile.dataset.letter = letter.dataset.letter;
-		tile.dataset.points = letter.dataset.points;
-		let curPoints = +tile.dataset.points;
+	for (const tile of word.tiles) {
+		const hoverTile = tile.tileHovering;
+		hoverTile.dataset.letter = tile.dataset.letter;
+		hoverTile.dataset.points = tile.dataset.points;
+		let curPoints = +hoverTile.dataset.points;
 		
-		if (tile.hasClass('x-2-letter'))
+		if (hoverTile.hasClass('x-2-letter'))
 			curPoints *= 2;
-		if (tile.hasClass('x-3-letter'))
+		if (hoverTile.hasClass('x-3-letter'))
 			curPoints *= 3;
-		if (tile.hasClass('x-2-word'))
+		if (hoverTile.hasClass('x-2-word'))
 			multiplier *= 2;
-		if (tile.hasClass('x-3-word'))
+		if (hoverTile.hasClass('x-3-word'))
 			multiplier *= 3;
 		
 		points += curPoints;
 		
-		tile.removeClass('wild');
-		tile.removeClass('x-2-letter');
-		tile.removeClass('x-3-letter');
-		tile.removeClass('x-2-word');
-		tile.removeClass('x-3-word');
+		hoverTile.removeClass('wild');
+		hoverTile.removeClass('x-2-letter');
+		hoverTile.removeClass('x-3-letter');
+		hoverTile.removeClass('x-2-word');
+		hoverTile.removeClass('x-3-word');
 		
-		tile.addClass('has-letter');
+		hoverTile.addClass('has-letter');
 	};
 	
 	word.points = points * multiplier;
 	addPoints(word.points);
 };
 
-let addPoints = (points) => {
+const addPoints = (points) => {
 	totalPoints += points;
 	pointsElem.dataset.points = ('00' + totalPoints).substr(-3);
 };
 
-let removePoints = (points) => {
+const removePoints = (points) => {
 	addPoints(-points);
 };
 
-let returnToHand = (word) => {
+const returnToHand = (word) => {
 	window.requestAnimationFrame(() => {
 		let after = null;
 		wordsHolderElem.q('.word').each(w => {
@@ -498,37 +499,37 @@ let returnToHand = (word) => {
 	});
 };
 
-let dragStartPos = { x: 0, y: 0 };
-let dragPos = { x: 0, y: 0 };
+const dragStartPos = { x: 0, y: 0 };
+const dragPos = { x: 0, y: 0 };
 let dragWord = null;
-let beginWordDrag = (word, mx, my) => {
+const beginWordDrag = (word, mx, my) => {
 	//word.removeClass('on-grid');
 	
 	dragStartPos.x = dragPos.x = mx;
 	dragStartPos.y = dragPos.y = my;
 	
-	for (let letter of word.letters)
-		letter.tileHovering = null;
+	for (const tile of word.tiles)
+		tile.tileHovering = null;
 	
 	window.requestAnimationFrame(() => {
-		let rect = word.getBoundingClientRect();
+		const rect = word.getBoundingClientRect();
 		word.pos.x = mx - rect.width;
 		word.pos.y = my - rect.height;
 		if (word.hasClass('rotated'))
-			rect.height /= word.letters.length;
+			rect.height /= word.tiles.length;
 		else
-			rect.width /= word.letters.length;
+			rect.width /= word.tiles.length;
 		if (IS_TOUCH_DEVICE)
 			word.pos.y -= rect.height * 2.25;
-		for (let [index, letter] of word.letters.entries()) {
+		for (const [index, tile] of word.tiles.entries()) {
 			let xx = word.pos.x;
 			let yy = word.pos.y;
 			if (word.hasClass('rotated'))
 				yy += (index * rect.height);
 			else
 				xx += (index * rect.width);
-			letter.center.x = xx + (rect.width / 2) - mx;
-			letter.center.y = yy + (rect.height / 2) - my;
+			tile.center.x = xx + (rect.width / 2) - mx;
+			tile.center.y = yy + (rect.height / 2) - my;
 		}
 		setWordPos(word, 0, 0, () => {
 			document.body.append(word);
@@ -539,59 +540,59 @@ let beginWordDrag = (word, mx, my) => {
 };
 
 let dragWordValidPlacement = false;
-let onWordDrag = (word, mx, my) => {
+const onWordDrag = (word, mx, my) => {
 	dragPos.x = mx;
 	dragPos.y = my;
 	
 	setWordPos(word, dragPos.x - dragStartPos.x, dragPos.y - dragStartPos.y);
 	
-	for (let letter of word.letters)
-		letter.tileHovering = null;
+	for (const tile of word.tiles)
+		tile.tileHovering = null;
 	
+	const overlappedTiles = [];
 	let x, y;
-	let overlappedTiles = [];
 	let hasWild = false;
-	let hasLetter = false;
-	for (let tile of boardTiles) {
-		tile.removeClass('word-hovering');
-		tile.removeClass('invalid');
-		for (let letter of word.letters) {
-			x = letter.center.x + dragPos.x;
-			y = letter.center.y + dragPos.y;
-			if (overlapTile(tile, x, y)) {
-				letter.tileHovering = tile;
-				if (tile.dataset.type === 'wild')
+	for (const boardTile of boardTiles) {
+		boardTile.removeClass('word-hovering');
+		boardTile.removeClass('invalid');
+		for (const tile of word.tiles) {
+			x = tile.center.x + dragPos.x;
+			y = tile.center.y + dragPos.y;
+			if (overlapTile(boardTile, x, y)) {
+				tile.tileHovering = boardTile;
+				if (boardTile.dataset.type === 'wild')
 					hasWild = true;
-				overlappedTiles.push([ letter, tile ]);
+				overlappedTiles.push([ tile, boardTile ]);
 			}
 		}
 	}
 	
-	dragWordValidPlacement = (overlappedTiles.length === word.letters.length);
+	dragWordValidPlacement = (overlappedTiles.length === word.tiles.length);
 	
-	for (let [letter, tile] of overlappedTiles) {
-		tile.addClass('word-hovering');
-		if (doesTileHasLetter(letter, tile)) {
-			if (tile.dataset.letter === letter.dataset.letter) {
-				hasLetter = true;
+	let isOccupied = false;
+	for (const [tile, boardTile] of overlappedTiles) {
+		boardTile.addClass('word-hovering');
+		if (isTileOccupied(tile, boardTile)) {
+			if (boardTile.dataset.letter === tile.dataset.letter) {
+				isOccupied = true;
 			} else {
 				dragWordValidPlacement = false;
-				tile.addClass('invalid');
+				boardTile.addClass('invalid');
 			}
 		}
 	}
 	
-	dragWordValidPlacement = (dragWordValidPlacement && (hasWild || hasLetter));
+	dragWordValidPlacement = (dragWordValidPlacement && (hasWild || isOccupied));
 	
 	if (!dragWordValidPlacement) {
-		for (let [letter, tile] of overlappedTiles) {
-			if (!doesTileHasLetter(letter, tile))
-				tile.addClass('invalid');
+		for (const [tile, boardTile] of overlappedTiles) {
+			if (!isTileOccupied(tile, boardTile))
+				boardTile.addClass('invalid');
 		}
 	}
 };
 
-let endWordDrag = (word) => {
+const endWordDrag = (word) => {
 	if (dragWordValidPlacement) {
 		alignWithGrid(word);
 	} else {
@@ -600,31 +601,31 @@ let endWordDrag = (word) => {
 	
 	dragWord = null;
 	
-	for (let tile of boardTiles)
+	for (const tile of boardTiles)
 		tile.removeClass('word-hovering');
 };
 
-let wordElems = [];
-let addWord = (word) => {
-	let wordElem = $new('.word').element();
+const wordElems = [];
+const addWord = (word) => {
+	const wordElem = $new('.word').element();
 	wordElem.points = 0;
 	wordElem.str = word;
-	wordElem.letters = [];
+	wordElem.tiles = [];
 	wordElem.order = wordsHolderElem.children.length;
 	wordElem.pos = { x: 0, y: 0 };
 	wordsHolderElem.append(wordElem);
 	
 	let totalPoints = 0;
-	for (let letter of word) {
+	for (const letter of word) {
 		totalPoints += LETTER_POINTS[letter] || 0;
-		letter = createTile(letter);
-		letter.center = { x: 0, y: 0 };
-		wordElem.letters.push(letter);
-		wordElem.append(letter);
+		const tile = createTile(letter);
+		tile.center = { x: 0, y: 0 };
+		wordElem.tiles.push(tile);
+		wordElem.append(tile);
 	}
 	wordElem.attr('data-points', totalPoints);
 	
-	let buttons = $new('.buttons').children(
+	const buttons = $new('.buttons').children(
 		$new('i').class('button horizontal fad fa-arrow-alt-square-right'),
 		$new('i').class('button vertical fad fa-arrow-alt-square-down')
 	);
