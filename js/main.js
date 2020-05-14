@@ -52,7 +52,7 @@ Math.easeInOut = t => (t <= .5) ? (t * t * 2) : (1 - (--t) * t * 2);
 //dictionary = dictionary.slice(0, 1);
 let grid;
 
-let pointsElem;
+let pointsTitleElem, pointsElem;
 let totalPoints = 0;
 
 const LETTER_POINTS = { A: 1, B: 3, C: 3, D: 2, E: 1, F: 4, G: 2, H: 4, I: 1, J: 8, K: 5, L: 1, M: 3, N: 1, O: 1, P: 3, Q: 10, R: 1, S: 1, T: 1, U: 1, V: 4, W: 4, X: 8, Y: 4, Z: 10 };
@@ -87,7 +87,10 @@ document.on('DOMContentLoaded', (e) => {
 	let headerElem = body.appendChild(
 		$new('header')
 			.children(
-				$new('.title'),
+				$new('.title').children(
+					$new('.top').text('Radical'),
+					$new('.bottom').text('Scrabble')
+				),
 				$new('.nav').children(
 					$new('span#home')
 						.child($new('i').class('home fad fa-home-alt'))
@@ -102,11 +105,15 @@ document.on('DOMContentLoaded', (e) => {
 						.child($new('i').class('undo fad fa-undo-alt'))
 						.on('click', actionUndo),
 				),
-				$new('.points').attr('data-points', '000')
+				$new('.points').children(
+					$new('.top').text('Points'),
+					$new('.bottom').attr('data-points', '000')
+				)
 			)
 			.element()
 	);
-	pointsElem = headerElem.q('.points');
+	pointsTitleElem = headerElem.q('.points .top');
+	pointsElem = headerElem.q('.points .bottom');
 	
 	undoButton = headerElem.q('#undo');
 	infoButton = headerElem.q('#info');
@@ -131,53 +138,56 @@ document.on('DOMContentLoaded', (e) => {
 			.element()
 	);
 	
+	// Render board
 	let boardSize = 15;
 	let numTiles = boardSize * boardSize;
-	
-	grid = Array.from({ length: boardSize }).map(c => Array.from({ length: boardSize }));
-	
-	let centerPos = Math.floor(boardSize / 2);
-	for (let t = 0; t < numTiles; ++t) {
-		let _x = (t % boardSize);
-		let _y = Math.floor(t / boardSize);
-		let x = Math.abs(centerPos - _x);
-		let y = Math.abs(centerPos - _y);
-		let d = Math.abs(x - y);
+	if (false) {
+		grid = Array.from({ length: boardSize }).map(c => Array.from({ length: boardSize }));
 		
-		let className = '';
-		if ((x === 0) && (y === 0))
-			className = 'wild';
-		else if (((x === 7) || (y === 7)) && (d % 7 === 0))
-			className = 'x-3-word';
-		else if ((x === y) && (x >= 3) && (x <= 6))
-			className = 'x-2-word';
-		else if ((d === 4) && ((x === 6) || (y === 6)))
-			className = 'x-3-letter';
-		else if ((x === y) && (x === 2))
-			className = 'x-3-letter';
-		else if ((d === 3) && ((x === 7) || (y === 7)))
-			className = 'x-2-letter';
-		else if ((d === 4) && ((x === 5) || (y === 5) || (x === 4) || (y === 4)))
-			className = 'x-2-letter';
-		else if ((x === y) && (x === 1))
-			className = 'x-2-letter';
+		let centerPos = Math.floor(boardSize / 2);
+		for (let t = 0; t < numTiles; ++t) {
+			let _x = (t % boardSize);
+			let _y = Math.floor(t / boardSize);
+			let x = Math.abs(centerPos - _x);
+			let y = Math.abs(centerPos - _y);
+			let d = Math.abs(x - y);
+			
+			let className = '';
+			if ((x === 0) && (y === 0))
+				className = 'wild';
+			else if (((x === 7) || (y === 7)) && (d % 7 === 0))
+				className = 'x-3-word';
+			else if ((x === y) && (x >= 3) && (x <= 6))
+				className = 'x-2-word';
+			else if ((d === 4) && ((x === 6) || (y === 6)))
+				className = 'x-3-letter';
+			else if ((x === y) && (x === 2))
+				className = 'x-3-letter';
+			else if ((d === 3) && ((x === 7) || (y === 7)))
+				className = 'x-2-letter';
+			else if ((d === 4) && ((x === 5) || (y === 5) || (x === 4) || (y === 4)))
+				className = 'x-2-letter';
+			else if ((x === y) && (x === 1))
+				className = 'x-2-letter';
+			
+			const speed = 0.04;
+			let delay = (x + y) * speed;
+			if (className !== '')
+				delay += 8 * speed;
+			
+			const tile = createTile(null, className);
+			// TODO(bret): Remove this animation delay at some point!
+			// TODO(bret): Figure out why this comment exists! :)
+			tile.style.animationDelay = tile.q('.background').style.animationDelay = delay + 's';
+			grid[_x][_y] = tile;
+			boardTiles.push(tile);
+			boardElem.append(tile);
+		}
 		
-		const speed = 0.04;
-		let delay = (x + y) * speed;
-		if (className !== '')
-			delay += 8 * speed;
-		
-		const tile = createTile(null, className);
-		// TODO(bret): Remove this animation delay at some point!
-		tile.style.animationDelay = tile.q('.background').style.animationDelay = delay + 's';
-		grid[_x][_y] = tile;
-		boardTiles.push(tile);
-		boardElem.append(tile);
+		for (const word of shuffle(dictionary))
+			addWord(word.toUpperCase());
 	}
-	
-	for (const word of shuffle(dictionary))
-		addWord(word.toUpperCase());
-	
+		
 	const boardWidth = 100, boardHalfWidth = boardWidth >> 1;
 	const emWidth = `${boardWidth}em`;
 	const emLeft = `calc(50% - ${boardHalfWidth}em)`;
@@ -475,9 +485,76 @@ const assignToGrid = (word) => {
 	addPoints(word.points);
 };
 
+let transition = 0;
 const addPoints = (points) => {
+	let p = totalPoints;
 	totalPoints += points;
-	pointsElem.dataset.points = ('00' + totalPoints).substr(-3);
+	
+	let timer = 0;
+	const length = 0.25 * (1 + Math.log(points)); // TODO(bret): Calculate this based on # of points
+	const invLength = 1 / length;
+	
+	const curTransition = ++transition;
+	let then = performance.now();
+	
+	const options = ['opacity'];
+	const pointsTitleSnapshot = Transition.snapshot(pointsTitleElem, options);
+	// const pointsSnapshot = Transition.snapshot(pointsElem, options);
+	
+	// pointsElem.style.opacity = 1;
+	
+	// Transition.from(pointsElem, pointsSnapshot, length * 1000);
+	
+	// Transition.animate(tile, keyframesWordPlace, duration, {
+	// 	delay: t * delay
+	// });
+	
+	// pointsTitleElem.style.transform = `scale(0.6)`;
+	pointsTitleElem.style.opacity = 0.3;
+	
+	let lastDigit = p;
+	const updatePoints = now => {
+		if (curTransition !== transition) return;
+		
+		const elapsed = (now - then) / 1000;
+		timer += elapsed;
+		then = now;
+		
+		if (timer < length) {
+			window.requestAnimationFrame(updatePoints);
+		} else {
+			timer = length;
+		}
+		
+		const t = Math.easeOut(Math.easeOut(timer * invLength));
+		const _points = Math.round(Math.lerp(p, totalPoints, t));
+		if (lastDigit !== _points) {
+			// TODO(bret): Do something
+			function random_rgba() {
+			    var o = Math.round, r = Math.random, s = 255;
+			    return 'rgba(' + o(r()*s) + ',' + o(r()*s) + ',' + o(r()*s) + ',' + r().toFixed(1) + ')';
+			}
+			// pointsElem.style.color = random_rgba();
+			const size = 0.2 + Math.random() * 0.4;
+			// pointsTitleElem.style.fontSize = `${0.75 - size}em`;
+			// pointsElem.style.fontSize = `${0.75 + size}em`;
+			pointsElem.style.transform = `scale(${1 + size})`;
+			lastDigit = _points;
+		}
+		
+		pointsElem.dataset.points = ('00' + _points).substr(-3);
+		
+		if (lastDigit === totalPoints) {
+			// TODO(bret): Do a delay & add a Transition.js transition to the scale there
+			pointsTitleElem.style.opacity = 1;
+			pointsElem.style.transform = `scale(1.5)`;
+			const snapshot = Transition.snapshot(pointsElem, ['transform']);
+			pointsElem.style.transform = `scale(1)`;
+			console.log(snapshot, pointsElem);
+			Transition.from(pointsElem, snapshot, 1e3);
+		}
+	};
+	window.requestAnimationFrame(updatePoints);
 };
 
 const removePoints = (points) => {
@@ -634,3 +711,7 @@ const addWord = (word) => {
 	
 	wordElems.push(wordElem);
 };
+
+setTimeout(() => {
+	addPoints(10);
+}, 1e3);

@@ -103,30 +103,38 @@ header
 		padding: 0.5em 0
 		text-transform: uppercase
 		transition: opacity 0.2s
+		user-select: none
 		&:hover
 			opacity: 1
+		.top, .bottom
 		&::before, &::after
 			display: block
 			font-size: 0.75em
 			line-height: 1em
 			white-space: nowrap
+		.bottom
 		&::after
 			opacity: 1
 	.title
 		float: left
+		.top
 		&::before
-			content: 'Radical'
 			opacity: 0.6
-		&::after
-			content: 'Scrabble'
+		// .bottom
 	.points
 		float: right
 		text-align: right
-		&::before
-			content: 'Points'
-		&::after
-			content: attr(data-points)
+		.top
+			transition: 0.3s opacity
+		.top
+			transform-origin: top right
+		// &::before
+		// 	content: 'Points'
+		.bottom
 			opacity: 0.6
+			transform-origin: bottom right
+			&::after
+				content: attr(data-points)
 	.nav
 		position: absolute
 		text-align: center
@@ -146,9 +154,9 @@ header
 			border: 0.12em solid rgba(255, 255, 255, 0.6)
 			margin: 0 0.15em
 			opacity: 0.7
-			
+
 			background-color: rgba(#435, 0.4)
-			
+
 			cursor: pointer
 			transition: opacity 0.2s
 			i
