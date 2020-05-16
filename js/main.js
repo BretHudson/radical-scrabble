@@ -15,7 +15,9 @@ const IS_EDGE = (userAgent.indexOf("Edge") != -1);
 
 const boardTiles = [];
 
-const version = '0.2.5';
+const version = '0.2.6';
+
+const RENDER_BOARD = true;
 
 const dictionary = [
 	'awesome',
@@ -161,7 +163,7 @@ document.on('DOMContentLoaded', (e) => {
 	// Render board
 	let boardSize = 15;
 	let numTiles = boardSize * boardSize;
-	if (false) {
+	if (RENDER_BOARD) {
 		grid = Array.from({ length: boardSize }).map(c => Array.from({ length: boardSize }));
 		
 		let centerPos = Math.floor(boardSize / 2);
@@ -391,6 +393,30 @@ const removeWord = (word) => {
 	playedWords.push(word);
 };
 
+const assignPointsToWord = (word) => {
+	let multiplier = 1;
+	let points = 0;
+	for (const tile of word.tiles) {
+		const hoverTile = tile.tileHovering;
+		hoverTile.dataset.letter = tile.dataset.letter;
+		hoverTile.dataset.points = tile.dataset.points;
+		let curPoints = +hoverTile.dataset.points;
+		
+		if (hoverTile.hasClass('x-2-letter'))
+			curPoints *= 2;
+		if (hoverTile.hasClass('x-3-letter'))
+			curPoints *= 3;
+		if (hoverTile.hasClass('x-2-word'))
+			multiplier *= 2;
+		if (hoverTile.hasClass('x-3-word'))
+			multiplier *= 3;
+		
+		points += curPoints;
+	};
+	
+	word.points = points * multiplier;
+};
+
 const keyframesWordPlace = {
 	0: {
 		'transform': 'scale(1)',
@@ -409,6 +435,9 @@ const animateWordIntoBoard = (word) => {
 	const tiles = word.q('.tile');
 	const delay = 60;
 	const duration = delay * 5;	
+	
+	assignPointsToWord(word);
+	addPoints(word.points);
 	
 	word.addClass('on-grid');
 	setTimeout(() => {
@@ -473,24 +502,8 @@ const alignWithGrid = (word) => {
 };
 
 const assignToGrid = (word) => {
-	let multiplier = 1;
-	let points = 0;
 	for (const tile of word.tiles) {
 		const hoverTile = tile.tileHovering;
-		hoverTile.dataset.letter = tile.dataset.letter;
-		hoverTile.dataset.points = tile.dataset.points;
-		let curPoints = +hoverTile.dataset.points;
-		
-		if (hoverTile.hasClass('x-2-letter'))
-			curPoints *= 2;
-		if (hoverTile.hasClass('x-3-letter'))
-			curPoints *= 3;
-		if (hoverTile.hasClass('x-2-word'))
-			multiplier *= 2;
-		if (hoverTile.hasClass('x-3-word'))
-			multiplier *= 3;
-		
-		points += curPoints;
 		
 		hoverTile.removeClass('wild');
 		hoverTile.removeClass('x-2-letter');
@@ -500,17 +513,14 @@ const assignToGrid = (word) => {
 		
 		hoverTile.addClass('has-letter');
 	};
-	
-	word.points = points * multiplier;
-	addPoints(word.points);
 };
 
-const updateColumn = (column, n, prev, next) => {
+const updateColumn = (column, n, prev, next, fade = true) => {
 	if (n === +column.children[1].textContent) {
 		return;
 	}
 	
-	column.classList.add('fade');
+	fade && column.classList.add('fade');
 	
 	column.children[0].textContent = prev || (n + 10 - 1) % 10;
 	column.children[1].textContent = n;
@@ -529,8 +539,10 @@ const addPoints = (inc) => {
 	let points = startPoints;
 	totalPoints += inc;
 	
-	let length = 300 * Math.log2(inc) * 2;
-	let lengthPerDigit = length / inc;
+	const incSign = Math.sign(inc);
+	const incAbs = Math.abs(inc);
+	let length = 300 * Math.log2(incAbs) * 2;
+	let lengthPerDigit = length / incAbs;
 	
 	let then = performance.now();
 	let elapsed = 0;
@@ -564,13 +576,17 @@ const addPoints = (inc) => {
 		elapsed += dt;
 		
 		const elapsedLerped = Math.lerp(0, length, Math.easeOut(Math.easeInOut(elapsed / length)));
-		const digitsElapsed = Math.floor(elapsedLerped / lengthPerDigit);
+		const digitsElapsed = (inc > 0)
+			? Math.floor(elapsedLerped / lengthPerDigit)
+			: Math.ceil(elapsedLerped / lengthPerDigit);
 		const curElapsed = elapsedLerped - lengthPerDigit * digitsElapsed;
 		
-		points = startPoints + digitsElapsed;
+		points = startPoints + digitsElapsed * incSign;
 		updateColumns(points);
 		
-		const em = Math.lerp(0, -0.99, curElapsed / lengthPerDigit);
+		const em = (inc > 0)
+			? Math.lerp(0, -0.99, curElapsed / lengthPerDigit)
+			: Math.lerp(0, 0.99, curElapsed / lengthPerDigit);
 		
 		if (points % 100 === 99) {
 			pointsColHundreds.firstChild.style.marginTop = `calc(${em}em)`;
@@ -744,14 +760,3 @@ const addWord = (word) => {
 	
 	wordElems.push(wordElem);
 };
-
-document.on('DOMContentLoaded', (e) => {
-	// totalPoints = 175;
-	// updateColumns(totalPoints);
-	// console.log({ totalPoints });
-	
-	setTimeout(() => {
-		addPoints(150);
-	}, 500);
-});
-
