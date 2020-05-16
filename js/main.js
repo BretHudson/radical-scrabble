@@ -53,6 +53,7 @@ Math.easeInOut = t => (t <= .5) ? (t * t * 2) : (1 - (--t) * t * 2);
 let grid;
 
 let pointsTitleElem, pointsElem;
+let pointsColHundreds, pointsColTens, pointsColOnes;
 let totalPoints = 0;
 
 const LETTER_POINTS = { A: 1, B: 3, C: 3, D: 2, E: 1, F: 4, G: 2, H: 4, I: 1, J: 8, K: 5, L: 1, M: 3, N: 1, O: 1, P: 3, Q: 10, R: 1, S: 1, T: 1, U: 1, V: 4, W: 4, X: 8, Y: 4, Z: 10 };
@@ -107,13 +108,32 @@ document.on('DOMContentLoaded', (e) => {
 				),
 				$new('.points').children(
 					$new('.top').text('Points'),
-					$new('.bottom').attr('data-points', '000')
+					// $new('.bottom').attr('data-points', '000'),
+					$new('.bottom').children(
+						$new('.column').child(
+							$new('.digit').text('-'),
+							$new('.digit').text('0'),
+							$new('.digit').text('.')
+						),
+						$new('.column').child(
+							$new('.digit').text('-'),
+							$new('.digit').text('0'),
+							$new('.digit').text('.')
+						),
+						$new('.column').child(
+							$new('.digit').text('-'),
+							$new('.digit').text('0'),
+							$new('.digit').text('.')
+						),
+					)
 				)
 			)
 			.element()
 	);
 	pointsTitleElem = headerElem.q('.points .top');
 	pointsElem = headerElem.q('.points .bottom');
+	
+	[pointsColHundreds, pointsColTens, pointsColOnes] = [...pointsElem.q('.column')]
 	
 	undoButton = headerElem.q('#undo');
 	infoButton = headerElem.q('#info');
@@ -485,76 +505,89 @@ const assignToGrid = (word) => {
 	addPoints(word.points);
 };
 
+const updateColumn = (column, n, prev, next) => {
+	if (n === +column.children[1].textContent) {
+		return;
+	}
+	
+	column.classList.add('fade');
+	
+	column.children[0].textContent = prev || (n + 10 - 1) % 10;
+	column.children[1].textContent = n;
+	column.children[2].textContent = next || (n + 1) % 10;
+};
+
+const updateColumns = (points, ...args) => {
+	updateColumn(pointsColHundreds, Math.floor(points / 100) % 10, ...args);
+	updateColumn(pointsColTens, Math.floor(points / 10) % 10, ...args);
+	updateColumn(pointsColOnes, points % 10, ...args);
+};
+
 let transition = 0;
-const addPoints = (points) => {
-	let p = totalPoints;
-	totalPoints += points;
+const addPoints = (inc) => {
+	const startPoints = totalPoints;
+	let points = startPoints;
+	totalPoints += inc;
 	
-	let timer = 0;
-	const length = 0.25 * (1 + Math.log(points)); // TODO(bret): Calculate this based on # of points
-	const invLength = 1 / length;
+	let length = 300 * Math.log2(inc) * 2;
+	let lengthPerDigit = length / inc;
 	
-	const curTransition = ++transition;
 	let then = performance.now();
+	let elapsed = 0;
 	
-	const options = ['opacity'];
-	const pointsTitleSnapshot = Transition.snapshot(pointsTitleElem, options);
-	// const pointsSnapshot = Transition.snapshot(pointsElem, options);
+	updateColumns(points, '-');
 	
-	// pointsElem.style.opacity = 1;
-	
-	// Transition.from(pointsElem, pointsSnapshot, length * 1000);
-	
-	// Transition.animate(tile, keyframesWordPlace, duration, {
-	// 	delay: t * delay
-	// });
-	
-	// pointsTitleElem.style.transform = `scale(0.6)`;
-	pointsTitleElem.style.opacity = 0.3;
-	
-	let lastDigit = p;
-	const updatePoints = now => {
-		if (curTransition !== transition) return;
+	const animate = now => {
+		if (elapsed > length) {
+			points = totalPoints;
+			
+			pointsColHundreds.firstChild.style.marginTop = 0;
+			pointsColTens.firstChild.style.marginTop = 0;
+			pointsColOnes.firstChild.style.marginTop = 0;
+			
+			updateColumns(points, '-', '-');
+			
+			window.requestAnimationFrame(() => {
+				pointsColHundreds.classList.remove('fade');
+				pointsColTens.classList.remove('fade');
+				pointsColOnes.classList.remove('fade');
+			});
+			
+			return;
+		}
 		
-		const elapsed = (now - then) / 1000;
-		timer += elapsed;
+		window.requestAnimationFrame(animate);
+		
+		const dt = now - then;
 		then = now;
 		
-		if (timer < length) {
-			window.requestAnimationFrame(updatePoints);
+		elapsed += dt;
+		
+		const elapsedLerped = Math.lerp(0, length, Math.easeOut(Math.easeInOut(elapsed / length)));
+		const digitsElapsed = Math.floor(elapsedLerped / lengthPerDigit);
+		const curElapsed = elapsedLerped - lengthPerDigit * digitsElapsed;
+		
+		points = startPoints + digitsElapsed;
+		updateColumns(points);
+		
+		const em = Math.lerp(0, -0.99, curElapsed / lengthPerDigit);
+		
+		if (points % 100 === 99) {
+			pointsColHundreds.firstChild.style.marginTop = `calc(${em}em)`;
 		} else {
-			timer = length;
+			pointsColHundreds.firstChild.style.marginTop = 0;
 		}
 		
-		const t = Math.easeOut(Math.easeOut(timer * invLength));
-		const _points = Math.round(Math.lerp(p, totalPoints, t));
-		if (lastDigit !== _points) {
-			// TODO(bret): Do something
-			function random_rgba() {
-			    var o = Math.round, r = Math.random, s = 255;
-			    return 'rgba(' + o(r()*s) + ',' + o(r()*s) + ',' + o(r()*s) + ',' + r().toFixed(1) + ')';
-			}
-			// pointsElem.style.color = random_rgba();
-			const size = 0.2 + Math.random() * 0.4;
-			// pointsTitleElem.style.fontSize = `${0.75 - size}em`;
-			// pointsElem.style.fontSize = `${0.75 + size}em`;
-			pointsElem.style.transform = `scale(${1 + size})`;
-			lastDigit = _points;
+		if (points % 10 === 9) {
+			pointsColTens.firstChild.style.marginTop = `calc(${em}em)`;
+		} else {
+			pointsColTens.firstChild.style.marginTop = 0;
 		}
 		
-		pointsElem.dataset.points = ('00' + _points).substr(-3);
-		
-		if (lastDigit === totalPoints) {
-			// TODO(bret): Do a delay & add a Transition.js transition to the scale there
-			pointsTitleElem.style.opacity = 1;
-			pointsElem.style.transform = `scale(1.5)`;
-			const snapshot = Transition.snapshot(pointsElem, ['transform']);
-			pointsElem.style.transform = `scale(1)`;
-			console.log(snapshot, pointsElem);
-			Transition.from(pointsElem, snapshot, 1e3);
-		}
+		pointsColOnes.firstChild.style.marginTop = `calc(${em}em)`;
 	};
-	window.requestAnimationFrame(updatePoints);
+	
+	window.requestAnimationFrame(animate);
 };
 
 const removePoints = (points) => {
@@ -712,6 +745,13 @@ const addWord = (word) => {
 	wordElems.push(wordElem);
 };
 
-setTimeout(() => {
-	addPoints(10);
-}, 1e3);
+document.on('DOMContentLoaded', (e) => {
+	// totalPoints = 175;
+	// updateColumns(totalPoints);
+	// console.log({ totalPoints });
+	
+	setTimeout(() => {
+		addPoints(150);
+	}, 500);
+});
+
