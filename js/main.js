@@ -338,7 +338,9 @@ const initGrid = (body, progress) => {
 				wordElem.classList.add('rotated');
 			}
 			
-			points += wordPoints * wordMultiplier;
+			wordPoints *= wordMultiplier
+			wordElem.points = wordPoints;
+			points += wordPoints;
 			
 			for (let i = 0, n = tiles.length; i < n; ++i) {
 				const tile = tiles[i];
