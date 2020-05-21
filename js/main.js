@@ -71,7 +71,17 @@ let actionUndo = () => {
 			tileHover = tile.tileHovering || getBoardTile(+tile.dataset.x, +tile.dataset.y);
 			let stacked = +tileHover.dataset.stacked - 1;
 			if (stacked === 0) {
-				resetTile(tileHover, 60 * (word.tiles.length - (word.tiles.length - l)));
+				resetTile(tileHover, 60 * (word.tiles.length - l));
+			} else {
+				if (word.hasClass('rotated')) {
+					tileHover.classList.remove('vertical');
+					tileHover.classList.remove('top');
+					tileHover.classList.remove('bottom');
+				} else {
+					tileHover.classList.remove('horizontal');
+					tileHover.classList.remove('left');
+					tileHover.classList.remove('right');
+				}
 			}
 			tileHover.dataset.stacked = stacked;
 		}
@@ -332,6 +342,10 @@ const initGrid = (body, progress) => {
 			wordElem.dataset.x = x;
 			wordElem.dataset.y = y;
 			
+			if (rotated === true) {
+				wordElem.classList.add('rotated');
+			}
+			
 			points += wordPoints * wordMultiplier;
 			
 			for (let i = 0, n = tiles.length; i < n; ++i) {
@@ -483,9 +497,8 @@ document.on('DOMContentLoaded', (e) => {
 		if (dragWord !== null) {
 			// If there are no buttons being pressed, return to hand
 			if (e.buttons === 0) {
-				// returnToHand(dragWord);
-				// dragWord = null;
-				console.log('oh!');
+				returnToHand(dragWord);
+				dragWord = null;
 				return;
 			}
 			
