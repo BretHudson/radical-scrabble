@@ -273,38 +273,56 @@ const initGrid = (body, progress) => {
 	if (progress !== null) {
 		const { wordsOnBoard } = progress;
 		const boardRect = boardElem.getBoundingClientRect();
-		// setTimeout(() => {
-			wordsOnBoard.forEach(w => {
-				const elem = wordElems.getWord(w);
-				const tileCoord = { x: 7, y: 4 };
+		setTimeout(() => {
+			const putWordOnBoard = () => {
+			// wordsOnBoard.forEach(w => {
+				const w = wordsOnBoard.shift();
+				if (w === undefined) return;
+				
+				const {
+					word,
+					tileCoord,
+					rotated = false
+				} = w;
+				
+				console.log(word);
+				const elem = wordElems.getWord(word);
 				const boardTile = getBoardTile(tileCoord.x, tileCoord.y);
 				const tileRect = boardTile.getBoundingClientRect();
 				
 				window.requestAnimationFrame(() => {
-					elem.classList.add('rotated');
-					
 					let x = boardRect.x + tileRect.width * tileCoord.x;
 					let y = boardRect.y + tileRect.height * tileCoord.y;
 					
-					if (true) { // rotated
-						console.log(tileRect);
+					if (rotated === true) {
+						elem.classList.add('rotated');
 						x += tileRect.width;
-						y += tileRect.height * w.length;
+						y += tileRect.height * word.length;
+					} else {
+						x += tileRect.width* word.length;
+						y += tileRect.height;
 					}
 					
 					
 					beginWordDrag(elem, x, y);
+					
 					window.requestAnimationFrame(() => {
 						removeWord(elem);
 						onWordDrag(elem, x, y);
 						endWordDrag(elem, true);
+						setTimeout(() => {
+							putWordOnBoard();
+						}, 100 * word.length);
+						// }, 1e3);
 					});
 					// console.log(elem.pos);
 					// alignWithGrid(elem);
 					// animateWordIntoBoard(elem);
 				});
-			});
-		// }, 3e3);
+			// });
+			};
+			putWordOnBoard();
+		}, 1400);
 	}
 	
 	wordsElem.appendChild(wordsHolderElem);
@@ -353,7 +371,20 @@ document.on('DOMContentLoaded', (e) => {
 	
 	const words = dictionary.slice();
 	const wordsOnBoard = [
-		'awesome'
+		{
+			word: 'awesome',
+			tileCoord: { x: 7, y: 4 },
+			rotated: true
+		},
+		{
+			word: 'dope',
+			tileCoord: { x: 6, y: 8 }
+		},
+		{
+			word: 'epic',
+			tileCoord: { x: 9, y: 8 },
+			rotated: true
+		},
 	];
 	localStorage.setItem('progress', JSON.stringify({
 		words,
