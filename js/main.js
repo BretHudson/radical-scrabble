@@ -196,16 +196,8 @@ const initGrid = (body, progress) => {
 				className = 'x-2-letter';
 			else if ((x === y) && (x === 1))
 				className = 'x-2-letter';
-			
-			const speed = 0.04;
-			let delay = (x + y) * speed;
-			if (className !== '')
-				delay += 8 * speed;
-			
+		
 			const tile = createTile(null, _x, _y, className);
-			// TODO(bret): Remove this animation delay at some point!
-			// TODO(bret): Figure out why this comment exists! :)
-			tile.style.animationDelay = tile.q('.background').style.animationDelay = delay + 's';
 			grid[_x][_y] = tile;
 			boardTiles.push(tile);
 			boardElem.append(tile);
@@ -393,6 +385,34 @@ const initGrid = (body, progress) => {
 		addPoints(points);
 	}
 	
+	grid = Array.from({ length: boardSize }).map(c => Array.from({ length: boardSize }));
+	
+	let centerPos = Math.floor(boardSize / 2);
+	for (let t = 0; t < numTiles; ++t) {
+		let _x = (t % boardSize);
+		let _y = Math.floor(t / boardSize);
+		let x = Math.abs(centerPos - _x);
+		let y = Math.abs(centerPos - _y);
+		
+		const speed = 0.04;
+		let delay = (x + y) * speed;
+		
+		const tile = getBoardTile(_x, _y);
+		if (tile.className.split(' ').length > 2)
+			delay += 8 * speed;
+		if (tile.classList.contains('has-letter')) {
+			delay += 10 * speed;
+			setTimeout(() => {
+				tile.classList.add('stop-animate');
+			}, Math.ceil(delay * 1e3 + 400 + 200)); // 400 being how long the delay is, 200 for just extra padding
+		}
+		
+		// TODO(bret): Remove this animation delay at some point!
+		// TODO(bret): Figure out why this comment exists! :)
+		tile.style.animationDelay = tile.q('.background').style.animationDelay = delay + 's';
+		grid[_x][_y] = tile;
+	}
+	
 	wordsElem.appendChild(wordsHolderElem);
 	
 	onResizeCallbacks.push(resizeBoard);
@@ -546,10 +566,17 @@ const recycleTile = (tile) => {
 };
 
 const createTile = (letter, x, y, className = '') => {
-	const prefix = (letter) ? 'has' : 'no'
 	const tile = recycledTiles.shift() || $new().children($new('.strings'), $new('.background')).element();
 	
-	tile.className = `tile ${className} ${prefix}-letter`;
+	const prefix = (letter) ? 'has' : 'no'
+	
+	tile.classList.add('tile');
+	tile.classList.add(`${prefix}-letter`);
+	if (className !== '')
+		tile.classList.add(className);
+	if (prefix === 'has') {
+		tile.classList.add('stop-animate');
+	}
 	tile.dataset.letter = letter || '';
 	tile.dataset.points = letter ? LETTER_POINTS[letter] : '';
 	tile.dataset.type = className;
@@ -565,6 +592,7 @@ const resetTile = (tile, delay) => {
 	tile.firstChild.style.transitionDelay = `0s`;
 	
 	tile.classList.remove('has-letter');
+	tile.classList.remove('stop-animate');
 	
 	tile.classList.remove('horizontal');
 	tile.classList.remove('vertical');
@@ -735,6 +763,7 @@ const assignToGrid = (word) => {
 		hoverTile.classList.remove('x-3-word');
 		
 		hoverTile.classList.add('has-letter');
+		hoverTile.classList.add('stop-animate');
 	};
 };
 
