@@ -68,7 +68,7 @@ let actionUndo = () => {
 		let tile, tileHover;
 		for (let l = 0; l < word.tiles.length; ++l) {
 			tile = word.tiles[l];
-			tileHover = tile.tileHovering;
+			tileHover = tile.tileHovering || getBoardTile(+tile.dataset.x, +tile.dataset.y);
 			let stacked = +tileHover.dataset.stacked - 1;
 			if (stacked === 0) {
 				resetTile(tileHover, 60 * (word.tiles.length - (word.tiles.length - l)));
@@ -192,7 +192,7 @@ const initGrid = (body, progress) => {
 			if (className !== '')
 				delay += 8 * speed;
 			
-			const tile = createTile(null, className);
+			const tile = createTile(null, _x, _y, className);
 			// TODO(bret): Remove this animation delay at some point!
 			// TODO(bret): Figure out why this comment exists! :)
 			tile.style.animationDelay = tile.q('.background').style.animationDelay = delay + 's';
@@ -269,60 +269,114 @@ const initGrid = (body, progress) => {
 	for (const word of shuffle(dictionary))
 		addWord(word.toUpperCase());
 	
-	// Add words that the player played in their last session
 	if (progress !== null) {
 		const { wordsOnBoard } = progress;
-		const boardRect = boardElem.getBoundingClientRect();
-		setTimeout(() => {
-			const putWordOnBoard = () => {
-			// wordsOnBoard.forEach(w => {
-				const w = wordsOnBoard.shift();
-				if (w === undefined) return;
-				
-				const {
-					word,
-					tileCoord,
-					rotated = false
-				} = w;
-				
-				console.log(word);
-				const elem = wordElems.getWord(word);
-				const boardTile = getBoardTile(tileCoord.x, tileCoord.y);
-				const tileRect = boardTile.getBoundingClientRect();
-				
-				window.requestAnimationFrame(() => {
-					let x = boardRect.x + tileRect.width * tileCoord.x;
-					let y = boardRect.y + tileRect.height * tileCoord.y;
+		let points = 0;
+		for (const w of wordsOnBoard) {
+			const {
+				word,
+				tileCoord,
+				rotated = false
+			} = w;
+			
+			let { x, y } = tileCoord;
+			
+			let finalPos = x;
+			if (rotated === true) {
+				finalPos = y;
+			}
+			finalPos += word.length;
+			
+			let success = (finalPos <= boardSize);
+			
+			const tiles = [];
+			const letters = word.toUpperCase().split('');
+			
+			let wordPoints = 0;
+			let wordMultiplier = 1;
+			if (success === true) {
+				letters.forEach((letter, i) => {
+					const tile = getBoardTile(x, y);
 					
-					if (rotated === true) {
-						elem.classList.add('rotated');
-						x += tileRect.width;
-						y += tileRect.height * word.length;
-					} else {
-						x += tileRect.width* word.length;
-						y += tileRect.height;
+					tiles.push(tile);
+					
+					if (tile.dataset.letter && (tile.dataset.letter !== letter)) {
+						success = false;
+						return;
 					}
 					
+					let curPoints = LETTER_POINTS[letter];
 					
-					beginWordDrag(elem, x, y);
+					if (tile.hasClass('x-2-letter'))
+						curPoints *= 2;
+					if (tile.hasClass('x-3-letter'))
+						curPoints *= 3;
+					if (tile.hasClass('x-2-word'))
+						wordMultiplier *= 2;
+					if (tile.hasClass('x-3-word'))
+						wordMultiplier *= 3;
 					
-					window.requestAnimationFrame(() => {
-						removeWord(elem);
-						onWordDrag(elem, x, y);
-						endWordDrag(elem, true);
-						setTimeout(() => {
-							putWordOnBoard();
-						}, 100 * word.length);
-						// }, 1e3);
-					});
-					// console.log(elem.pos);
-					// alignWithGrid(elem);
-					// animateWordIntoBoard(elem);
+					wordPoints += curPoints;
+					
+					if (rotated) {
+						++y;
+					} else {
+						++x;
+					}
 				});
-			// });
-			};
-			putWordOnBoard();
-		}, 1400);
+			}
+			
+			if (success === false) break;
+			
+			const wordElem = wordElems.getWord(word);
+			wordElem.dataset.x = x;
+			wordElem.dataset.y = y;
+			
+			points += wordPoints * wordMultiplier;
+			
+			for (let i = 0, n = tiles.length; i < n; ++i) {
+				const tile = tiles[i];
+				
+				const wordTile = wordElem.children[i];
+				wordTile.dataset.x = tile.dataset.x;
+				wordTile.dataset.y = tile.dataset.y;
+				
+				const letter = letters[i];
+				tile.dataset.letter = letter;
+				tile.dataset.points = LETTER_POINTS[letter];
+				
+				tile.dataset.stacked = +(tile.dataset.stacked || 0) + 1;
+				
+				tile.classList.remove('wild');
+				tile.classList.remove('x-2-letter');
+				tile.classList.remove('x-3-letter');
+				tile.classList.remove('x-2-word');
+				tile.classList.remove('x-3-word');
+				
+				tile.classList.remove('no-letter');
+				
+				tile.classList.add('has-letter');
+				
+				if (rotated) {
+					tile.classList.add('vertical');
+					if (i === 0) {
+						tile.classList.add('top');
+					} else if (i === word.length - 1) {
+						tile.classList.add('bottom');
+					}
+				} else {
+					tile.classList.add('horizontal');
+					if (i === 0) {
+						tile.classList.add('left');
+					} else if (i === word.length - 1) {
+						tile.classList.add('right');
+					}
+				}
+			}
+			
+			removeWord(wordElem);
+		}
+		addPoints(points);
 	}
 	
 	wordsElem.appendChild(wordsHolderElem);
@@ -358,11 +412,11 @@ const debounce = (func, duration, immediate = false) => {
 };
 
 const onResizeCallbacks = [];
-const resize = debounce(e => {
+const resize = e => {
 	for (let c of onResizeCallbacks) {
 		c(e);
 	}
-}, 1e3, true);
+};
 
 document.on('DOMContentLoaded', (e) => {
 	document.head[0].append(style);
@@ -383,6 +437,15 @@ document.on('DOMContentLoaded', (e) => {
 		{
 			word: 'epic',
 			tileCoord: { x: 9, y: 8 },
+			rotated: true
+		},
+		{
+			word: 'mint',
+			tileCoord: { x: 8, y: 10 },
+		},
+		{
+			word: 'bitchin',
+			tileCoord: { x: 11, y: 8 },
 			rotated: true
 		},
 	];
@@ -469,7 +532,7 @@ const recycleTile = (tile) => {
 	recycledTiles.push(tile);
 };
 
-const createTile = (letter, className = '') => {
+const createTile = (letter, x, y, className = '') => {
 	const prefix = (letter) ? 'has' : 'no'
 	const tile = recycledTiles.shift() || $new().children($new('.strings'), $new('.background')).element();
 	
@@ -477,6 +540,9 @@ const createTile = (letter, className = '') => {
 	tile.dataset.letter = letter || '';
 	tile.dataset.points = letter ? LETTER_POINTS[letter] : '';
 	tile.dataset.type = className;
+	
+	if (x !== undefined) tile.dataset.x = x;
+	if (y !== undefined) tile.dataset.y = y;
 	
 	return tile;
 };
@@ -526,6 +592,10 @@ const playedWords = [];
 const removeWord = (word) => {
 	word.remove();
 	playedWords.push(word);
+};
+
+const getPointsForTile = (hoverTile) => {
+	
 };
 
 const assignPointsToWord = (word) => {
