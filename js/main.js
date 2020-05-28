@@ -275,6 +275,7 @@ const initGrid = (body, progress) => {
 		const { wordsOnBoard } = progress;
 		let points = 0;
 		for (const w of wordsOnBoard) {
+			console.log(w);
 			const {
 				word,
 				tileCoord,
@@ -331,8 +332,9 @@ const initGrid = (body, progress) => {
 			if (success === false) break;
 			
 			const wordElem = wordElems.getWord(word);
-			wordElem.dataset.x = x;
-			wordElem.dataset.y = y;
+			wordElem.dataset.word = word;
+			wordElem.dataset.x = tileCoord.x;
+			wordElem.dataset.y = tileCoord.y;
 			
 			if (rotated === true) {
 				wordElem.classList.add('rotated');
@@ -458,37 +460,6 @@ document.on('DOMContentLoaded', (e) => {
 	document.head[0].append(style);
 	
 	let body = document.body;
-	
-	const words = dictionary.slice();
-	const wordsOnBoard = [
-		{
-			word: 'awesome',
-			tileCoord: { x: 7, y: 4 },
-			rotated: true
-		},
-		{
-			word: 'dope',
-			tileCoord: { x: 6, y: 8 }
-		},
-		{
-			word: 'epic',
-			tileCoord: { x: 9, y: 8 },
-			rotated: true
-		},
-		{
-			word: 'mint',
-			tileCoord: { x: 8, y: 10 },
-		},
-		{
-			word: 'bitchin',
-			tileCoord: { x: 11, y: 8 },
-			rotated: true
-		},
-	];
-	localStorage.setItem('progress', JSON.stringify({
-		words,
-		wordsOnBoard
-	}));
 	
 	const progress = JSON.parse(localStorage.getItem('progress'));
 	if (progress !== null) {
@@ -631,10 +602,28 @@ const setWordPos = (word, x, y, before = null, execIfNull = false) => {
 	});
 };
 
+const saveGame = () => {
+	const wordsOnBoard = playedWords.map(w => ({
+		word: w.dataset.word,
+		tileCoord: {
+			x: +w.dataset.x,
+			y: +w.dataset.y
+		},
+		rotated: w.classList.contains('rotated')
+	}));
+	
+	localStorage.setItem('progress', JSON.stringify({
+		words: dictionary,
+		wordsOnBoard
+	}));
+};
+
 const playedWords = [];
 const removeWord = (word) => {
 	word.remove();
 	playedWords.push(word);
+	
+	console.log(word);
 };
 
 const getPointsForTile = (hoverTile) => {
@@ -719,6 +708,7 @@ const animateWordIntoBoard = (word) => {
 		setTimeout(() => {
 			assignToGrid(word);
 			removeWord(word);
+			saveGame();
 			word.classList.remove('on-grid');
 		}, duration + tiles.length * delay);
 	}, 100);
@@ -1025,3 +1015,51 @@ const addWord = (word) => {
 	wordElems.push(wordElem);
 	wordElems[word] = wordElem;
 };
+
+// Dev section!
+const localStorageSetGood = () => {
+	const words = dictionary.slice();
+	const wordsOnBoard = [
+		{
+			word: 'awesome',
+			tileCoord: { x: 7, y: 4 },
+			rotated: true
+		},
+		{
+			word: 'dope',
+			tileCoord: { x: 6, y: 8 }
+		},
+		{
+			word: 'epic',
+			tileCoord: { x: 9, y: 8 },
+			rotated: true
+		},
+		{
+			word: 'mint',
+			tileCoord: { x: 8, y: 10 },
+		},
+		{
+			word: 'bitchin',
+			tileCoord: { x: 11, y: 8 },
+			rotated: true
+		},
+		{
+			word: 'boss',
+			tileCoord: { x: 11, y: 8 }
+		},
+		{
+			word: 'gnarly',
+			tileCoord: { x: 5, y: 4 }
+		},
+		{
+			word: 'righteous',
+			tileCoord: { x: 2, y: 6 }
+		},
+	];
+	
+	localStorage.setItem('progress', JSON.stringify({
+		words,
+		wordsOnBoard
+	}));
+};
+
