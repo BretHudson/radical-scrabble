@@ -15,14 +15,21 @@ const IS_EDGE = (userAgent.indexOf("Edge") != -1);
 
 const boardSize = 15;
 const boardTiles = [];
-const getBoardTile = (x, y) => boardTiles[y * boardSize + x];
+const getBoardTile = (x, y) => {
+	if ((x < 0) || (x >= boardSize) || (y < 0) || (y >= boardSize))
+		return null;
+	return boardTiles[y * boardSize + x];
+};
 
-const version = '0.2.6';
+const getHoveringTile = (tile) => getBoardTile(+tile.dataset.x, +tile.dataset.y);
+
+const version = '0.2.7';
 
 const RENDER_BOARD = true;
 
 const dictionary = [
 	'awesome',
+	//'badass',
 	//'baller',
 	'bitchin',
 	'boss',
@@ -49,9 +56,9 @@ const style = $new('style[type=text/css]').element();
 let boardElem, wordsHolderElem;
 
 Math.lerp = (a, b, t) => (b - a) * t + a;
-Math.easeIn = t => t * t;
-Math.easeOut = t => -t * (t - 2);
-Math.easeInOut = t => (t <= .5) ? (t * t * 2) : (1 - (--t) * t * 2);
+Math.easeIn = (t) => t * t;
+Math.easeOut = (t) => -t * (t - 2);
+Math.easeInOut = (t) => (t <= .5) ? (t * t * 2) : (1 - (--t) * t * 2);
 
 let grid;
 
@@ -61,14 +68,14 @@ let totalPoints = 0;
 
 const LETTER_POINTS = { A: 1, B: 3, C: 3, D: 2, E: 1, F: 4, G: 2, H: 4, I: 1, J: 8, K: 5, L: 1, M: 3, N: 1, O: 1, P: 3, Q: 10, R: 1, S: 1, T: 1, U: 1, V: 4, W: 4, X: 8, Y: 4, Z: 10 };
 
-let actionUndo = () => {
+const actionUndo = () => {
 	// TODO(bret): Probably make sure you can't do this while something is animating
 	if (playedWords.length > 0) {
 		let word = playedWords.pop();
 		let tile, tileHover;
 		for (let l = 0; l < word.tiles.length; ++l) {
 			tile = word.tiles[l];
-			tileHover = tile.tileHovering || getBoardTile(+tile.dataset.x, +tile.dataset.y);
+			tileHover = getHoveringTile(tile);
 			let stacked = +tileHover.dataset.stacked - 1;
 			if (stacked === 0) {
 				resetTile(tileHover, 60 * (word.tiles.length - l));
@@ -88,6 +95,7 @@ let actionUndo = () => {
 		removePoints(word.points);
 		word.points = 0;
 		returnToHand(word);
+		saveGame();
 	}
 };
 
@@ -275,7 +283,6 @@ const initGrid = (body, progress) => {
 		const { wordsOnBoard } = progress;
 		let points = 0;
 		for (const w of wordsOnBoard) {
-			console.log(w);
 			const {
 				word,
 				tileCoord,
@@ -290,7 +297,7 @@ const initGrid = (body, progress) => {
 			}
 			finalPos += word.length;
 			
-			let success = (finalPos <= boardSize);
+			let success = (x >= 0) && (y >= 0) && (finalPos <= boardSize);
 			
 			const tiles = [];
 			const letters = word.toUpperCase().split('');
@@ -332,7 +339,6 @@ const initGrid = (body, progress) => {
 			if (success === false) break;
 			
 			const wordElem = wordElems.getWord(word);
-			wordElem.dataset.word = word;
 			wordElem.dataset.x = tileCoord.x;
 			wordElem.dataset.y = tileCoord.y;
 			
@@ -340,7 +346,7 @@ const initGrid = (body, progress) => {
 				wordElem.classList.add('rotated');
 			}
 			
-			wordPoints *= wordMultiplier
+			wordPoints *= wordMultiplier;
 			wordElem.points = wordPoints;
 			points += wordPoints;
 			
@@ -422,9 +428,10 @@ const initGrid = (body, progress) => {
 	onResizeCallbacks.push(resizeBoard);
 };
 
+// TODO(bret): This is technically throttle... should rewrite if you want to use this!
 const debounce = (func, duration, immediate = false) => {
 	let timeout = null;
-	let latestArgs = [{ timestamp: 'what' }];
+	let latestArgs = [];
 	let lastCallAt = Date.now() - duration;
 	let calledMultipleTimes = false;
 	
@@ -585,13 +592,7 @@ const resetTile = (tile, delay) => {
 	return tile;
 };
 
-const overlapTile = (tile, x, y) => {
-	return (x >= tile.pos.left) && (x < tile.pos.right) && (y >= tile.pos.top) && (y < tile.pos.bottom);
-};
-
-const isTileOccupied = (letter, tile) => {
-	return (tile.dataset.letter !== '');
-};
+const isTileOccupied = (letter, tile) => (tile.dataset.letter !== '');
 
 const setWordPos = (word, x, y, before = null, execIfNull = false) => {
 	window.requestAnimationFrame(() => {
@@ -602,6 +603,7 @@ const setWordPos = (word, x, y, before = null, execIfNull = false) => {
 	});
 };
 
+// TODO(bret): Do we want to throttle this? What if the player leaves the browser page before it saves? But then again... that's on the player if they close it that quickly?
 const saveGame = () => {
 	const wordsOnBoard = playedWords.map(w => ({
 		word: w.dataset.word,
@@ -622,8 +624,6 @@ const playedWords = [];
 const removeWord = (word) => {
 	word.remove();
 	playedWords.push(word);
-	
-	console.log(word);
 };
 
 const getPointsForTile = (hoverTile) => {
@@ -634,7 +634,7 @@ const assignPointsToWord = (word) => {
 	let multiplier = 1;
 	let points = 0;
 	for (const tile of word.tiles) {
-		const hoverTile = tile.tileHovering;
+		const hoverTile = getHoveringTile(tile);
 		hoverTile.dataset.letter = tile.dataset.letter;
 		hoverTile.dataset.points = tile.dataset.points;
 		let curPoints = +hoverTile.dataset.points;
@@ -685,7 +685,7 @@ const animateWordIntoBoard = (word) => {
 			});
 			
 			const delayStr = `${t * delay / 1000}s`;
-			const gridTile = tile.tileHovering;
+			const gridTile = getHoveringTile(tile);
 			gridTile.dataset.stacked = 1 + +(gridTile.dataset.stacked || 0);
 			gridTile.firstChild.style.transitionDelay = `${delayStr}, ${delayStr}, ${delayStr}, ${delayStr}`;
 			gridTile.classList.remove('no-letter');
@@ -717,7 +717,7 @@ const animateWordIntoBoard = (word) => {
 const alignWithGrid = (word, instant = false) => {
 	const startPos = word.getBoundingClientRect();
 	word.pos.x = word.pos.y = 0;
-	const firstTile = word.tiles[0].tileHovering;
+	const firstTile = getHoveringTile(word);
 	const dx = startPos.x - firstTile.pos.x;
 	const dy = startPos.y - firstTile.pos.y;
 	if (instant) {
@@ -746,7 +746,7 @@ const alignWithGrid = (word, instant = false) => {
 
 const assignToGrid = (word) => {
 	for (const tile of word.tiles) {
-		const hoverTile = tile.tileHovering;
+		const hoverTile = getHoveringTile(tile);
 		
 		hoverTile.classList.remove('wild');
 		hoverTile.classList.remove('x-2-letter');
@@ -878,9 +878,6 @@ const beginWordDrag = (word, mx, my) => {
 	dragStartPos.x = dragPos.x = mx;
 	dragStartPos.y = dragPos.y = my;
 	
-	for (const tile of word.tiles)
-		tile.tileHovering = null;
-	
 	window.requestAnimationFrame(() => {
 		const rect = word.getBoundingClientRect();
 		word.pos.x = mx - rect.width;
@@ -916,12 +913,7 @@ const onWordDrag = (word, mx, my) => {
 	
 	setWordPos(word, dragPos.x - dragStartPos.x, dragPos.y - dragStartPos.y);
 	
-	for (const tile of word.tiles)
-		tile.tileHovering = null;
-	
 	// TODO(bret): Cache this on resize
-	const boardRect = boardElem.getBoundingClientRect();
-	
 	const overlappedTiles = [];
 	let x, y;
 	let hasWild = false;
@@ -930,19 +922,34 @@ const onWordDrag = (word, mx, my) => {
 		boardTile.classList.remove('invalid');
 	}
 	
+	// TODO(bret): Cache this on resize!
+	const boardRect = boardElem.getBoundingClientRect();
+	
+	const boardX = boardRect.x;
+	const boardY = boardRect.y;
+	const tileSize = boardRect.width / boardSize;
+	
 	// TODO(bret): First off, make sure the logic here is correct. Second off... this needs to be more performant! Could probably use math here :)
-	for (const boardTile of boardTiles) {
-		for (const tile of word.tiles) {
-			x = tile.center.x + dragPos.x;
-			y = tile.center.y + dragPos.y;
-			if (overlapTile(boardTile, x, y)) {
-				tile.tileHovering = boardTile;
-				if (boardTile.dataset.type === 'wild')
-					hasWild = true;
-				overlappedTiles.push([ tile, boardTile ]);
-			}
-		}
+	let boardTile;
+	let success = true;
+	for (const tile of word.tiles) {
+		x = Math.floor((tile.center.x + dragPos.x - boardX) / tileSize);
+		y = Math.floor((tile.center.y + dragPos.y - boardY) / tileSize);
+		
+		tile.dataset.x = x;
+		tile.dataset.y = y;
+		
+		boardTile = getBoardTile(x, y);
+		if (boardTile === null) break;
+		
+		if (boardTile.dataset.type === 'wild')
+			hasWild = true;
+		
+		overlappedTiles.push([ tile, boardTile ]);
 	}
+	
+	word.dataset.x = word.tiles[0].dataset.x;
+	word.dataset.y = word.tiles[0].dataset.y;
 	
 	dragWordValidPlacement = (overlappedTiles.length === word.tiles.length);
 	
@@ -1013,6 +1020,7 @@ const addWord = (word) => {
 	wordElem.append(buttons);
 	
 	wordElems.push(wordElem);
+	wordElem.dataset.word = word;
 	wordElems[word] = wordElem;
 };
 
@@ -1054,6 +1062,10 @@ const localStorageSetGood = () => {
 		{
 			word: 'righteous',
 			tileCoord: { x: 2, y: 6 }
+		},
+		{
+			word: 'fresh',
+			tileCoord: { x: 7, y: 12 }
 		},
 	];
 	
