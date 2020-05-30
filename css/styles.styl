@@ -224,17 +224,21 @@ header
 					opacity: 0.25
 
 .board
-	position: absolute
 	line-height: 0
-	background-color: $c_board
-	padding: 1.5em
-	width: 100em
-	height: 100em
-	.landscape &
-		left: unset !important
-		right: 50% !important
-		top: 52.5% !important
-		transform: translateY(-50%)
+	width: 97em
+	height: 97em
+	&-wrapper
+		position: absolute
+		line-height: 0
+		width: 100em
+		height: 100em
+		padding: 1.5em
+		background-color: $c_board
+		.landscape &
+			left: unset !important
+			right: 50% !important
+			top: 52.5% !important
+			transform: translateY(-50%)
 
 .words
 	.landscape &

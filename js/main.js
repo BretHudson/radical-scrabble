@@ -14,6 +14,7 @@ const IS_MSIE = (/\b(?:MSIE|Trident)\b/i.test(userAgent));
 const IS_EDGE = (userAgent.indexOf("Edge") != -1);
 
 const boardSize = 15;
+let boardRect;
 const boardTiles = [];
 const getBoardTile = (x, y) => {
 	if ((x < 0) || (x >= boardSize) || (y < 0) || (y >= boardSize))
@@ -156,7 +157,8 @@ const initGrid = (body, progress) => {
 	infoButton = headerElem.q('#info');
 	resetButton = headerElem.q('#reset');
 	
-	boardElem = body.appendChild($new('.board').element());
+	const boardWrapper = body.appendChild($new('.board-wrapper').element());
+	boardElem = boardWrapper.appendChild($new('.board').element());
 	let wordsElem = body.appendChild($new('.words').element());
 	
 	let footerElem = body.appendChild(
@@ -212,16 +214,16 @@ const initGrid = (body, progress) => {
 		}
 	}
 	
-	const boardWidth = 100, boardHalfWidth = boardWidth >> 1;
+	const boardWidth = 100, boardHalfWidth = boardWidth / 2;
 	const emWidth = `${boardWidth}em`;
 	const emLeft = `calc(50% - ${boardHalfWidth}em)`;
 	
 	headerElem.style.width = footerElem.style.width = emWidth; //`${boardWidth * 2}em`;
 	headerElem.style.left = footerElem.style.left = emLeft; //`calc(50% - ${boardWidth}em)`;
 	
-	boardElem.style.width = emWidth;
-	boardElem.style.left = emLeft;
-	boardElem.style.top = '12em';
+	boardWrapper.style.width = emWidth;
+	boardWrapper.style.left = emLeft;
+	boardWrapper.style.top = '12em';
 	
 	wordsElem.style.width = emWidth;
 	wordsElem.style.height = `calc(100% - ${boardWidth}em - 18em)`;
@@ -269,6 +271,8 @@ const initGrid = (body, progress) => {
 				tile.pos = tile.getBoundingClientRect();
 			});
 		});
+		
+		boardRect = boardElem.getBoundingClientRect();
 	};
 	
 	resizeBoard();
@@ -918,14 +922,10 @@ const onWordDrag = (word, mx, my) => {
 		boardTile.classList.remove('invalid');
 	}
 	
-	// TODO(bret): Cache this on resize!
-	const boardRect = boardElem.getBoundingClientRect();
-	
 	const boardX = boardRect.x;
 	const boardY = boardRect.y;
 	const tileSize = boardRect.width / boardSize;
 	
-	// TODO(bret): First off, make sure the logic here is correct. Second off... this needs to be more performant! Could probably use math here :)
 	let boardTile;
 	let success = true;
 	for (const tile of word.tiles) {
