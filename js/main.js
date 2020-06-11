@@ -61,8 +61,6 @@ Math.easeIn = (t) => t * t;
 Math.easeOut = (t) => -t * (t - 2);
 Math.easeInOut = (t) => (t <= .5) ? (t * t * 2) : (1 - (--t) * t * 2);
 
-let grid;
-
 let pointsTitleElem, pointsElem;
 let pointsColHundreds, pointsColTens, pointsColOnes;
 let totalPoints = 0;
@@ -179,15 +177,13 @@ const initGrid = (body, progress) => {
 	// Render board
 	let numTiles = boardSize * boardSize;
 	if (RENDER_BOARD) {
-		grid = Array.from({ length: boardSize }).map(c => Array.from({ length: boardSize }));
-		
-		let centerPos = Math.floor(boardSize / 2);
+		const centerPos = Math.floor(boardSize / 2);
 		for (let t = 0; t < numTiles; ++t) {
-			let _x = (t % boardSize);
-			let _y = Math.floor(t / boardSize);
-			let x = Math.abs(centerPos - _x);
-			let y = Math.abs(centerPos - _y);
-			let d = Math.abs(x - y);
+			const  _x = (t % boardSize);
+			const  _y = Math.floor(t / boardSize);
+			const  x = Math.abs(centerPos - _x);
+			const  y = Math.abs(centerPos - _y);
+			const  d = Math.abs(x - y);
 			
 			let className = '';
 			if ((x === 0) && (y === 0))
@@ -208,7 +204,6 @@ const initGrid = (body, progress) => {
 				className = 'x-2-letter';
 		
 			const tile = createTile(null, _x, _y, className);
-			grid[_x][_y] = tile;
 			boardTiles.push(tile);
 			boardElem.append(tile);
 		}
@@ -399,8 +394,6 @@ const initGrid = (body, progress) => {
 		addPoints(points);
 	}
 	
-	grid = Array.from({ length: boardSize }).map(c => Array.from({ length: boardSize }));
-	
 	let centerPos = Math.floor(boardSize / 2);
 	for (let t = 0; t < numTiles; ++t) {
 		let _x = (t % boardSize);
@@ -424,7 +417,6 @@ const initGrid = (body, progress) => {
 		// TODO(bret): Remove this animation delay at some point!
 		// TODO(bret): Figure out why this comment exists! :)
 		tile.style.animationDelay = tile.q('.background').style.animationDelay = delay + 's';
-		grid[_x][_y] = tile;
 	}
 	
 	wordsElem.appendChild(wordsHolderElem);
@@ -1071,3 +1063,70 @@ const localStorageSetGood = () => {
 	}));
 };
 
+let snapshotCanvas, ctx;
+const CANVAS_WIDTH = 600, CANVAS_HEIGHT = 335;
+const renderSnapshot = () => {
+	ctx.fillStyle = '#2f2f69';
+	ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+	
+	const GRID_X = 7.5;
+	const GRID_Y = 7.5;
+	const GRID_HEIGHT = CANVAS_HEIGHT - 15;
+	
+	const gridHeight = GRID_HEIGHT;
+	const cellPadding = 1.2;
+	const cellHeight = gridHeight / 15;
+	
+	const colors = [
+		'rgba(161, 161, 161, 0.3)',
+		'rgba(255, 255, 0, 0.3)',
+		'rgba(255, 165, 0, 0.3)',
+		'rgba(255, 0, 0, 0.3)',
+		'rgba(128, 0, 128, 0.3)',
+		'rgba(0, 0, 0, 0.3)'
+	];
+	
+	const numCells = 15 * 15;
+	const centerPos = Math.floor(boardSize / 2);
+	for (let i = 0; i < numCells; ++i) {
+		let color = 0;
+		const _x = i % 15;
+		const _y = Math.floor(i / 15);
+		const x = Math.abs(centerPos - _x);
+		const y = Math.abs(centerPos - _y);
+		const d = Math.abs(x - y);
+		
+		const drawX = GRID_X + _x * cellHeight + cellPadding;
+		const drawY = GRID_Y + _y * cellHeight + cellPadding;
+		
+		const drawW = cellHeight - (cellPadding * 2);
+		const drawH = cellHeight - (cellPadding * 2);
+		
+		if ((x === 0) && (y === 0))
+			color = 1;
+		else if (((x === 7) || (y === 7)) && (d % 7 === 0))
+			color = 5;
+		else if ((x === y) && (x >= 3) && (x <= 6))
+			color = 4;
+		else if ((d === 4) && ((x === 6) || (y === 6)))
+			color = 3;
+		else if ((x === y) && (x === 2))
+			color = 3;
+		else if ((d === 3) && ((x === 7) || (y === 7)))
+			color = 2;
+		else if ((d === 4) && ((x === 5) || (y === 5) || (x === 4) || (y === 4)))
+			color = 2;
+		else if ((x === y) && (x === 1))
+			color = 2;
+		
+		ctx.fillStyle = colors[color];
+		ctx.fillRect(drawX, drawY, drawW, drawH);
+	}
+};
+
+document.on('DOMContentLoaded', (e) => {
+	snapshotCanvas = document.getElementById('snapshot-canvas');
+	ctx = snapshotCanvas.getContext('2d');
+	
+	renderSnapshot();
+});
