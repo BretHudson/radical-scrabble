@@ -1077,6 +1077,11 @@ const renderSnapshot = () => {
 	const cellPadding = 1.2;
 	const cellHeight = gridHeight / 15;
 	
+	const bodyFontSize = +document.body.style.fontSize.replace('px', '');
+	const gridInPixels = bodyFontSize * 97;
+	
+	const gridToCanvasRatio = GRID_HEIGHT / gridInPixels;
+	
 	const colors = [
 		'rgba(161, 161, 161, 0.3)',
 		'rgba(255, 255, 0, 0.3)',
@@ -1104,7 +1109,7 @@ const renderSnapshot = () => {
 		
 		if ((x === 0) && (y === 0))
 			color = 1;
-		else if (((x === 7) || (y === 7)) && (d % 7 === 0))
+		else if (((x === 7) || (y ===  7)) && (d % 7 === 0))
 			color = 5;
 		else if ((x === y) && (x >= 3) && (x <= 6))
 			color = 4;
@@ -1122,11 +1127,27 @@ const renderSnapshot = () => {
 		ctx.fillStyle = colors[color];
 		ctx.fillRect(drawX, drawY, drawW, drawH);
 	}
+	
+	// TODO(bret): Move this into the above loop!
+	// TODO(bret): ctx.font = getFont(size); // from slunch
+	// NOTE(bret): it was 3 in the original code, might need to look into how tf this is being computed
+	const fontSize = 2.5 * bodyFontSize * gridToCanvasRatio;
+	ctx.font = `${fontSize}pt 'Consolas', cursive`;
+	
+	const drawX = GRID_X + (0 + 0.5) * cellHeight;
+	const drawY = GRID_Y + (0 + 0.5) * cellHeight;
+	
+	ctx.textAlign = 'center';
+	ctx.textBaseline = 'middle';
+	ctx.fillStyle = 'white';
+	ctx.fillText('3W', drawX, drawY);
 };
 
 document.on('DOMContentLoaded', (e) => {
 	snapshotCanvas = document.getElementById('snapshot-canvas');
 	ctx = snapshotCanvas.getContext('2d');
 	
-	renderSnapshot();
+	setTimeout(() => {
+		renderSnapshot();
+	}, 500);
 });
