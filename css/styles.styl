@@ -1,13 +1,4 @@
-$c_board = #2f2f69
-$c_bg = #685B87
-$c_tile_letter = #C5A064
-
 // #6666ff
-$tColors = 0, 0, 0, 0
-$tColors[0] = orange
-$tColors[1] = red
-$tColors[2] = purple
-$tColors[3] = black
 
 $stringThickness = 70%
 $stringThickness = 50%
@@ -29,13 +20,85 @@ html
 	font-family: 'Consolas', cursive
 	font-display: swap
 
+	--text-color: white
+	--page-background-color: #685B87
+	--board-color: #2f2f69
+
+	--nav-button-border-color: rgba(255, 255, 255, 0.6)
+	--nav-button-background-color: rgba(#435, 0.4)
+
+	--wild-color: yellow
+	--x-2-letter-color: orange
+	--x-3-letter-color: red
+	--x-2-word-color: purple
+	--x-3-word-color: black
+	--empty-tile-color: #a1a1a1
+	--empty-tile-text-color: white
+	--tile-color: #C5A064
+	--tile-border-color: #8b6914
+	--tile-text-color: white
+	--word-holder-color: #633
+	--word-holder-border-color: #311
+
+	--tile-opacity: 0.3
+	--tile-type-opacity: 0.3
+
+.theme-90s-skater
+	--text-color: white
+	--page-background-color: #DC1D87
+	--board-color: #333
+
+	--nav-button-border-color: #333
+	--nav-button-background-color: rgba(#000, 0.7)
+
+	--wild-color: #D91A84
+	--x-2-letter-color: #EB88C1
+	--x-3-letter-color: #8E1E58
+	--x-2-word-color: #E53F95
+	--x-3-word-color: black
+	--empty-tile-color: #ccc
+	--empty-tile-text-color: white
+
+	--tile-color: #DC1D87
+	--tile-border-color: #DC1D87
+	--tile-text-color: white
+	--word-holder-color: #616161
+	--word-holder-border-color: #333
+
+	--tile-opacity: 0.3
+	--tile-type-opacity: 0.7
+
+.theme-garbage
+	--text-color: magenta
+	--page-background-color: black
+	--board-color: #2f2f69
+
+	--nav-button-border-color: rgba(255, 255, 255, 0.6)
+	--nav-button-background-color: rgba(#435, 0.4)
+
+	--wild-color: blue
+	--x-2-letter-color: lime
+	--x-3-letter-color: cyan
+	--x-2-word-color: yellow
+	--x-3-word-color: red
+	--empty-tile-color: purple
+	--empty-tile-text-color: white
+	--tile-color: forestgreen
+	--tile-border-color: #8b6914
+	--tile-text-color: yellow
+	--word-holder-color: #633
+	--word-holder-border-color: #311
+
+	--tile-opacity: 0.9
+	--tile-type-opacity: 1.0
+
 html, body
 	height: 100%
 
 body
 	margin: 0
-	background-color: $c_bg
-	color: white
+	background-color: var(--page-background-color)
+	color: var(--text-color)
 	overflow: hidden
 	text-transform: uppercase
 	font-size: 0 // NOTE(bret): Set to 0 so we don't get any odd zooming on mobile on page load (trust me here, remove it and watch everything fall apart)
@@ -45,7 +108,7 @@ body
 		background-color: #008*/
 
 a
-	color: white
+	color: var(--text-color)
 	text-decoration: none
 	transition: color 0.2s, opacity 0.2s, transform 0.2s
 	transform: scale(1)
@@ -146,28 +209,18 @@ header
 				background: linear-gradient(180deg,
 					rgba(white, 0) 0%,
 					rgba(white, 0) 31%,
-					white (1/3)*100%,
-					white (2/3)*100%,
+					var(--text-color) (1/3)*100%,
+					var(--text-color) (2/3)*100%,
 					rgba(white, 0) 69%,
 					rgba(white, 0) 100%
 				)
-				-webkit-text-fill-color: #ffffff00
+				-webkit-text-fill-color: #ff00ff00
 				-webkit-background-clip: text
-				color: white
+				color: var(--text-color)
 				height: 3em
 				transition: opacity 0.2s
 				&.fade
 					opacity: 1
-				// &:last-child
-					// background: rgba(lime, 0.3)
-					// transform: translateY(50% * (1/2))
-					// .digit:first-child
-						// margin-top: calc(-1em + 0.5px)
-						// color: yellow
-						// transform: translateY(-50%)
-						// animation: move 0.3s forwards
-					// .digit:last-child
-					// 	color: lime
 	.nav
 		position: absolute
 		text-align: center
@@ -184,11 +237,11 @@ header
 			border-radius: 30%
 			width: 1.6em
 			height: 1.6em
-			border: 0.12em solid rgba(255, 255, 255, 0.6)
+			border: 0.12em solid var(--nav-button-border-color)
 			margin: 0 0.15em
 			opacity: 0.7
 
-			background-color: rgba(#435, 0.4)
+			background-color: var(--nav-button-background-color)
 
 			cursor: pointer
 			transition: opacity 0.2s
@@ -199,8 +252,8 @@ header
 				left: 50%
 				top: 50%
 				transform: translate(-50%, -50%)
-				--fa-primary-color: white
-				--fa-secondary-color: $c_tile_letter
+				--fa-primary-color: var(--tile-text-color)
+				--fa-secondary-color: var(--tile-color)
 				--fa-secondary-opacity: 1.0
 			.home
 				font-size: 0.85em
@@ -233,7 +286,7 @@ header
 		width: 100em
 		height: 100em
 		padding: 1.5em
-		background-color: $c_board
+		background-color: var(--board-color)
 		.landscape &
 			left: unset !important
 			right: 50% !important
@@ -252,11 +305,8 @@ header
 	position: fixed
 	line-height: 0
 	overflow: hidden
-	border: 1.5em solid #68511C
-	border: 1.5em solid #c9c0a3
-	border: 1.5em solid #311
-	background-color: #f9f0e3
-	background-color: #633
+	border: 1.5em solid var(--word-holder-border-color)
+	background-color: var(--word-holder-color)
 	.words-holder
 		/*background-color: #8b6914
 		background-color: #3F3833
@@ -299,12 +349,12 @@ header
 		white-space: nowrap
 		padding-left: 1.5em
 		i
-			--fa-primary-color: white
-			--fa-secondary-color: $c_tile_letter
+			--fa-primary-color: var(--tile-text-color)
+			--fa-secondary-color: var(--tile-color)
 			--fa-secondary-opacity: 1.0
 			font-size: 6.35em
 			margin: 0 0.1em
-			color: $c_tile_letter
+			color: var(--tile-color)
 			opacity: 0.5
 			transition: opacity 0.2s
 			cursor: grab
@@ -334,6 +384,9 @@ header
 	position: relative
 	display: inline-block
 	animation-fill-mode: forwards
+	color: var(--empty-tile-text-color)
+	&.has-letter
+		color: var(--tile-text-color)
 	.background
 		position: absolute
 		left: 5%
@@ -341,27 +394,33 @@ header
 		width: 90%
 		height: 90%
 		border-radius: 15%
-		background-color: #a1a1a1
-		opacity: 0.3
+		background-color: var(--empty-tile-color)
+		opacity: var(--tile-opacity)
 		z-index: 1
+		.no-letter&
+			.wild&
+			.x-2-letter&
+			.x-3-letter&
+			.x-2-word&
+			.x-3-word&
+				opacity: var(--tile-type-opacity)
 		/*^[0]:nth-child(2n) ^[1..-1]
 			animation: tileRotate1 1s*/
 		.has-letter&
-			//background-color: #deb887
-			background-color: $c_tile_letter
-			border: 0.15em solid #8b6914
+			background-color: var(--tile-color)
+			border: 0.15em solid var(--tile-border-color)
 			opacity: 1.0
 		.no-letter&
 			.wild&
-				background-color: yellow
+				background-color: var(--wild-color)
 			.x-2-letter&
-				background-color: $tColors[0]
+				background-color: var(--x-2-letter-color)
 			.x-3-letter&
-				background-color: $tColors[1]
+				background-color: var(--x-3-letter-color)
 			.x-2-word&
-				background-color: $tColors[2]
+				background-color: var(--x-2-word-color)
 			.x-3-word&
-				background-color: $tColors[3]
+				background-color: var(--x-3-word-color)
 		.has-letter&,
 		.no-letter&
 			.word-hovering&
@@ -380,7 +439,7 @@ header
 			content: ''
 			position: absolute
 			transform: translate(-50%, -50%)
-			background-color: $c_tile_letter
+			background-color: var(--tile-color)
 			z-index: 0
 			width: 0%
 			height: 0%
