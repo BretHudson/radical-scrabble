@@ -53,6 +53,21 @@ const dictionary = [
 	'wicked',
 ];//.slice(0, 1);
 
+const themes = [
+	{
+		title: 'Default',
+		value: 'theme-default'
+	},
+	{
+		title: '90s Skater',
+		value: 'theme-90s-skater'
+	},
+	{
+		title: 'Garbage',
+		value: 'theme-garbage'
+	}
+];
+
 const style = $new('style[type=text/css]').element();
 let boardElem, wordsHolderElem;
 
@@ -68,6 +83,11 @@ let pointsColHundreds, pointsColTens, pointsColOnes;
 let totalPoints = 0;
 
 const LETTER_POINTS = { A: 1, B: 3, C: 3, D: 2, E: 1, F: 4, G: 2, H: 4, I: 1, J: 8, K: 5, L: 1, M: 3, N: 1, O: 1, P: 3, Q: 10, R: 1, S: 1, T: 1, U: 1, V: 4, W: 4, X: 8, Y: 4, Z: 10 };
+
+const actionSettings = () => {
+	overlay.classList.add('show');
+	settingsModal.classList.add('show');
+};
 
 const actionUndo = () => {
 	// TODO(bret): Probably make sure you can't do this while something is animating
@@ -119,7 +139,7 @@ const initGrid = (body, progress) => {
 						/*.on('click', actionInfo)*/,
 					$new('span#settings')
 						.child($new('i').class('settings fad fa-sliders-h-square'))
-						/*.on('click', actionSettings)*/,
+						.on('click', actionSettings),
 					$new('span#undo')
 						.child($new('i').class('undo fad fa-undo-alt'))
 						.on('click', actionUndo),
@@ -467,6 +487,44 @@ const resize = e => {
 	}
 };
 
+let overlay, settingsModal;
+const initSettings = body => {
+	overlay = $new('#overlay').element();
+	settingsModal = $new('#settings-modal').element();
+	
+	overlay.on('click', e => {
+		overlay.classList.remove('show');
+		settingsModal.classList.remove('show');
+	});
+	
+	const createOption = ({ title, value }) => $new('option').text(title).attr('value', value);
+	
+	let currentTheme = localStorage.getItem('theme') || themes[0].option;
+	document.body.classList.add(currentTheme);
+	
+	const themeDropdown =
+		$new('select')
+			.children(themes.map(createOption))
+			.element();
+	
+	themeDropdown.on('change', e => {
+		const { value } = e.target;
+		document.body.classList.remove(currentTheme);
+		
+		currentTheme = value;
+		document.body.classList.add(currentTheme);
+		
+		localStorage.setItem('theme', currentTheme);
+	});
+	
+	themeDropdown.value = currentTheme;
+	
+	settingsModal.append(themeDropdown);
+	
+	body.append(overlay);
+	body.append(settingsModal);
+};
+
 document.on('DOMContentLoaded', (e) => {
 	document.head[0].append(style);
 	
@@ -474,6 +532,8 @@ document.on('DOMContentLoaded', (e) => {
 	
 	const progress = JSON.parse(localStorage.getItem('progress'));
 	initGrid(body, progress);
+	
+	initSettings(body);
 	
 	resize();
 	
