@@ -28,6 +28,32 @@ const version = '0.2.7';
 
 const RENDER_BOARD = true;
 
+const KEYS = {
+	LEFT: 37,
+	UP: 38,
+	RIGHT: 39,
+	DOWN: 40,
+	B: 66,
+	A: 65,
+	SPACE: 32,
+	ENTER: 13
+};
+
+const konami = [
+	KEYS.UP,
+	KEYS.UP,
+	KEYS.DOWN,
+	KEYS.DOWN,
+	KEYS.LEFT,
+	KEYS.RIGHT,
+	KEYS.LEFT,
+	KEYS.RIGHT,
+	KEYS.B,
+	KEYS.A
+];
+
+const latestKeys = Array.from({ length: konami.length });
+
 const dictionary = [
 	'awesome',
 	//'badass',
@@ -578,6 +604,26 @@ document.on('DOMContentLoaded', (e) => {
 	
 	window.on('mouseup', dragEnd);
 	window.on('touchend', dragEnd);
+	
+	document.on('keydown', e => {
+		switch (e.keyCode) {
+			case KEYS.SPACE:
+			case KEYS.ENTER: {
+				let valid = true;
+				for (let i = 0, n = konami.length; valid && (i < n); ++i) {
+					valid = (latestKeys[i] === konami[i]); 
+				}
+				
+				if (valid) {
+					// TODO(bret): Do something special!
+					console.log('you have entered the konami code');
+				}
+			} break;
+		}
+		
+		latestKeys.shift();
+		latestKeys.push(e.keyCode);
+	});
 });
 
 // TODO(bret): Create a shuffle button!
