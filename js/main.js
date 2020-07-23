@@ -13,6 +13,10 @@ const IS_WEBKIT = (IS_CHROME || IS_SAFARI || IS_OPERA);
 const IS_MSIE = (/\b(?:MSIE|Trident)\b/i.test(userAgent));
 const IS_EDGE = (userAgent.indexOf("Edge") != -1);
 
+String.prototype.toTitleCase = function() {
+	return this.split(' ').map(v => v.substring(0, 1).toUpperCase() + v.substring(1).toLowerCase()).join(' ');
+};
+
 const boardSize = 15;
 let boardRect;
 const boardTiles = [];
@@ -91,10 +95,15 @@ const themes = [
 	{
 		title: 'Garbage',
 		value: 'theme-garbage'
+	},
+	{
+		title: 'Custom',
+		value: 'theme-custom'
 	}
 ];
 
 const style = $new('style[type=text/css]').element();
+const colorStyle = $new('style[type=text/css]').element();
 let boardElem, wordsHolderElem;
 
 Math.lerp = (a, b, t) => (b - a) * t + a;
@@ -110,9 +119,18 @@ let totalPoints = 0;
 
 const LETTER_POINTS = { A: 1, B: 3, C: 3, D: 2, E: 1, F: 4, G: 2, H: 4, I: 1, J: 8, K: 5, L: 1, M: 3, N: 1, O: 1, P: 3, Q: 10, R: 1, S: 1, T: 1, U: 1, V: 4, W: 4, X: 8, Y: 4, Z: 10 };
 
-const actionSettings = () => {
+const openSettings = () => {
 	overlay.classList.add('show');
 	settingsModal.classList.add('show');
+};
+
+const closeSettings = () => {
+	overlay.classList.remove('show');
+	settingsModal.classList.remove('show');
+};
+
+const actionSettings = () => {
+	openSettings();
 };
 
 const actionUndo = () => {
@@ -278,6 +296,7 @@ const initGrid = (body, progress) => {
 	
 	const tileSize = (boardWidth - 3) / boardSize; // NOTE(bret): for that 1.5em padding yo
 	style.textContent = `.tile { width: ${tileSize}em; height: ${tileSize}em; }`;
+	colorStyle.textContent = '';
 	
 	const resizeBoard = () => {
 		// TODO(bret): Make sure we re-position all the tiles!
@@ -519,9 +538,10 @@ const initSettings = body => {
 	settingsModal = $new('#settings-modal').element();
 	
 	overlay.on('click', e => {
-		overlay.classList.remove('show');
-		settingsModal.classList.remove('show');
+		closeSettings();
 	});
+	
+	openSettings();
 	
 	const createOption = ({ title, value }) => $new('option').text(title).attr('value', value);
 	
@@ -547,12 +567,107 @@ const initSettings = body => {
 	
 	settingsModal.append(themeDropdown);
 	
+	const customThemeColors = JSON.parse(localStorage.getItem('custom-theme')) || {};
+	
+	const updateCustomThemeStyle = () => {
+		let styleStr = '.theme-custom { ';
+		styleStr += Object.entries(customThemeColors).map(([k, v]) => `--${k}: ${v}`).join('; ');
+		colorStyle.textContent = styleStr;
+		
+		localStorage.setItem('custom-theme', JSON.stringify(customThemeColors));
+	};
+	
+	updateCustomThemeStyle();
+	
+	const colorPickers = [];
+	
+	const createColorPicker = (property, defaultValue) => {
+		const initialValue = customThemeColors[property] || defaultValue;
+		
+		const id = `input-color-${property}`;
+		const title =
+			property.replace(/-/g, ' ').toTitleCase();
+		
+		const colorPickerWrapper =
+			$new('.color-picker-wrapper');
+		
+		const colorPickerLabel =
+			$new('label')
+				.attr('for', id)
+				.text(title)
+				.element();
+		
+		const colorPicker =
+			$new('input[type=color]')
+				.id(id)
+				.attr('value', initialValue)
+				.attr('data-default-value', defaultValue)
+				.attr('data-css-property', property)
+				.element();
+		
+		const resetButton =
+			$new('button')
+				.text('Reset')
+				.on('click', e => {
+					const {
+						dataset: { cssProperty }
+					} = colorPicker;
+					
+					colorPicker.value = defaultValue;
+					
+					delete customThemeColors[cssProperty];
+					updateCustomThemeStyle();
+				});
+		
+		colorPicker.on('change', e => {
+			const {
+				value,
+				dataset: { cssProperty }
+			} = e.target;
+			
+			customThemeColors[cssProperty] = value;
+			
+			updateCustomThemeStyle();
+		});
+		
+		colorPickers.push(colorPicker);
+		
+		colorPickerWrapper.append(colorPickerLabel);
+		colorPickerWrapper.append(colorPicker);
+		colorPickerWrapper.append(resetButton);
+		
+		settingsModal.append(colorPickerWrapper);
+	};
+	
+	// TODO(bret): Do some meta-programming here to read the CSS styles and grab all the colors :)
+	createColorPicker('page-background-color', '#685B87');
+	createColorPicker('board-color', '#2f2f69');
+	
+	const resetAllCustomColors = e => {
+		Object.keys(customThemeColors).forEach(k => delete customThemeColors[k]);
+		
+		colorPickers.forEach(colorPicker => {
+			colorPicker.value = colorPicker.dataset.defaultValue;
+		});
+		
+		updateCustomThemeStyle();
+	};
+	
+	const resetAllButton =
+		$new('button')
+			.text('Reset All Colors')
+			.on('click', resetAllCustomColors)
+			.element();
+	
+	settingsModal.append(resetAllButton);
+	
 	body.append(overlay);
 	body.append(settingsModal);
 };
 
 document.on('DOMContentLoaded', (e) => {
 	document.head[0].append(style);
+	document.head[0].append(colorStyle);
 	
 	let body = document.body;
 	
