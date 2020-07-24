@@ -642,24 +642,7 @@ const initSettings = body => {
 		settingsModal.append(colorPickerWrapper);
 	};
 	
-	createColorPicker('text-color', 'white');
-	createColorPicker('page-background-color', '#685B87');
-	createColorPicker('board-color', '#2f2f69');
-	createColorPicker('nav-button-border-color', '#ffffff99');
-	createColorPicker('nav-button-background-color', '#44335566');
-	createColorPicker('wild-color', '#FFFF00');
-	createColorPicker('x-2-letter-color', '#FFA500');
-	createColorPicker('x-3-letter-color', '#FF0000');
-	createColorPicker('x-2-word-color', '#800080');
-	createColorPicker('x-3-word-color', '#000000');
-	createColorPicker('empty-tile-color', '#a1a1a1');
-	createColorPicker('empty-tile-text-color', '#ffffff');
-	createColorPicker('tile-color', '#C5A064');
-	createColorPicker('tile-border-color', '#8b6914');
-	createColorPicker('tile-text-color', '#ffffff');
-	createColorPicker('word-holder-color', '#633');
-	createColorPicker('word-holder-border-color', '#311');
-	
+	{{colorPickers}}
 	
 	const resetAllCustomColors = e => {
 		Object.keys(customThemeColors).forEach(k => delete customThemeColors[k]);
