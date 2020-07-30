@@ -93,6 +93,10 @@ const themes = [
 		value: 'theme-90s-skater'
 	},
 	{
+		title: 'Pastel',
+		value: 'theme-pastel'
+	},
+	{
 		title: 'Garbage',
 		value: 'theme-garbage'
 	},

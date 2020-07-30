@@ -88,14 +88,7 @@ const themes = [
 		title: 'Default',
 		value: 'theme-default'
 	},
-	{
-		title: '90s Skater',
-		value: 'theme-90s-skater'
-	},
-	{
-		title: 'Garbage',
-		value: 'theme-garbage'
-	},
+	{{themes}}
 	{
 		title: 'Custom',
 		value: 'theme-custom'

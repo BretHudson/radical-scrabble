@@ -43,7 +43,7 @@ html
 	--tile-opacity: 0.3
 	--tile-type-opacity: 0.3
 
-.theme-90s-skater
+.theme-90s-skater /* theme: 90s Skater */
 	--text-color: white
 	--page-background-color: #DC1D87
 	--board-color: #333
@@ -56,7 +56,6 @@ html
 	--x-3-letter-color: #8E1E58
 	--x-2-word-color: #E53F95
 	--x-3-word-color: black
-	--empty-tile-color: #ccc
 	--empty-tile-color: #99c
 	--empty-tile-text-color: white
 
@@ -69,7 +68,34 @@ html
 	--tile-opacity: 0.3
 	--tile-type-opacity: 0.7
 
-.theme-garbage
+// NOTE(bret): Based off of https://visme.co/blog/wp-content/uploads/candies-color-palette-hex-codes-pastel-colors.jpg
+.theme-pastel /* theme: Pastel */
+	// TODO(bret): Maybe implement a way to set the font-weight?
+	--text-color: black
+	--page-background-color: #FDD
+	--board-color: #F3F3F3
+
+	--nav-button-border-color: #C99
+	--nav-button-background-color: rgba(#f88, 0.4)
+
+	--wild-color: #fff27e
+	--x-2-letter-color: #B7E709
+	--x-3-letter-color: #C3A0E9
+	--x-2-word-color: #F99A9C /* #F9CA9C */
+	--x-3-word-color: #affaaf // #B5DDD1
+	--empty-tile-text-color: #666
+
+	--tile-color: #fcbdcc
+	--tile-border-color: #ecadbc
+	// TODO(bret): Figure out the right color here :) (probably the number of the beast)
+	--tile-text-color: #ffffff
+	--word-holder-color: #E5EEFF
+	--word-holder-border-color: #D5DEEF
+
+	--tile-opacity: 0.3
+	--tile-type-opacity: 0.7
+
+.theme-garbage /* theme: Garbage */
 	--text-color: magenta
 	--page-background-color: black
 	--board-color: #2f2f69
@@ -527,10 +553,10 @@ header
 	align-items: center
 	background: #877
 	width: 100em
-	// height: 300px
+	min-height: 100em
 	left: 50%
 	top: 50%
-	padding: 1rem
+	padding: 3em
 	transform: translate(-50%, -50%)
 	z-index: 1000
 	&.show

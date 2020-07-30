@@ -12,20 +12,45 @@ const watchDirs = [
 const compile = () => {
 	const styl = fs.readFileSync(path.join(baseDirectory, 'css', 'styles.styl'), 'utf8');
 	
-	const regexThemeColor = /\/\* themeColor \*\//;
-	const regexGetThemeColor = /--(?<property>[a-z0-9\-]+): (?<value>[A-Za-z0-9(),. #]+) /;
-	const colors =
-		styl.split('\n')
-			.filter(c => regexThemeColor.test(c))
-			.map(c => ({
-				...c.match(regexGetThemeColor).groups
-			}));
+	const replacements = {};
 	
-	const colorPickers = colors.map(({ property, value }) => `createColorPicker('${property}', '${value}');\n\t`).join('');
+	// Theme Colors
+	{
+		const regexThemeColor = /\/\* themeColor \*\//;
+		const regexGetThemeColor = /--(?<property>[a-z0-9\-]+): (?<value>[A-Za-z0-9(),. #]+) /;
+		const colors =
+			styl.split('\n')
+				.filter(c => regexThemeColor.test(c))
+				.map(c => ({
+					...c.match(regexGetThemeColor).groups
+				}));
+		
+		const colorPickers = colors.map(({ property, value }) => `createColorPicker('${property}', '${value}');\n\t`).join('');
+		
+		replacements['{{colorPickers}}'] = colorPickers;
+	}
 	
-	const js =
-		fs.readFileSync(path.join(baseDirectory, 'js', '_main.bs'), 'utf8')
-			.replace('{{colorPickers}}', colorPickers)
+	// Themes
+	{
+		const regexTheme = /\.(?<selector>[a-z0-9\-]+) \/\* theme: (?<title>[\w ]+) \*\//;
+		const themeData =
+			styl.split('\n')
+				.filter(c => regexTheme.test(c))
+				.map(c => ({
+					...c.match(regexTheme).groups
+				}));
+		
+		const themes =
+			themeData.map(({ selector, title }) => `{\n\t\ttitle: '${title}',\n\t\tvalue: '${selector}'\n\t},`).join('\n\t');
+		
+		replacements['{{themes}}'] = themes;
+	}
+	
+	let js = fs.readFileSync(path.join(baseDirectory, 'js', '_main.bs'), 'utf8');
+	
+	Object.entries(replacements).forEach(([k, v]) => {
+		js = js.replace(k, v);
+	});
 	
 	fs.writeFileSync(path.join(baseDirectory, 'js', 'main.js'), js);
 };
@@ -37,7 +62,7 @@ watcher.on('change', async path => {
 	
 	switch (filename) {
 		case 'styles.styl':
-		case '_main.js': {
+		case '_main.bs': {
 			compile();
 		} break;
 	}
