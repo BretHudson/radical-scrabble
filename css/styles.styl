@@ -563,7 +563,7 @@ header
 	&.show
 		display: flex
 
-.color-picker-wrapper
+.color-option
 	font-size: 3em
 	display: flex
 	justify-content: space-between
@@ -571,14 +571,30 @@ header
 	width: 100%
 	margin-top: 0.5em
 	text-align: center
-	input[type=color]
+	.title
+		user-select: none
+		display: block
+
+.color-picker-wrapper
+	display: flex
+	align-items: center
+	.color-picker
+		display: inline-block
+		background: var(--color)
 		width: 3em
 		height: 1em
+		border-radius: 0.5em
+	i
+		margin: 0 0.25em
+		&:hover
+			cursor: pointer
+	input[type=color]
+		opacity: 0
+		width: 1px
+		height: 1px
 		outline: 0
 		border: 0
 		padding: 0
 	button
 		font-size: 0.5em
 		padding: 0.4em 1em
-	label
-		display: block

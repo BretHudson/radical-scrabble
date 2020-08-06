@@ -60,6 +60,26 @@ const latestKeys = Array.from({ length: konami.length });
 
 const dictionaries = [
 	[ 
+		'awesome', 
+		'bitchin', 
+		'boss', 
+		'cool', 
+		'dope', 
+		'epic', 
+		'fresh', 
+		'gnarly', 
+		'groovy', 
+		'mint', 
+		'radical', 
+		'righteous', 
+		'rockin', 
+		'sweet', 
+		'sick', 
+		'tight', 
+		'tubular', 
+		'wicked' 
+	],
+	[ 
 		'fallus', 
 		'phaked', 
 		'phamous', 
@@ -83,26 +103,6 @@ const dictionaries = [
 		'phuck', 
 		'phunky', 
 		'phurious' 
-	],
-	[ 
-		'awesome', 
-		'bitchin', 
-		'boss', 
-		'cool', 
-		'dope', 
-		'epic', 
-		'fresh', 
-		'gnarly', 
-		'groovy', 
-		'mint', 
-		'radical', 
-		'righteous', 
-		'rockin', 
-		'sweet', 
-		'sick', 
-		'tight', 
-		'tubular', 
-		'wicked' 
 	],
 	[ 
 		'apple', 
@@ -631,7 +631,7 @@ const initSettings = body => {
 	
 	updateCustomThemeStyle();
 	
-	const colorPickers = [];
+	const colorInputs = [];
 	
 	const createColorPicker = (property, defaultValue) => {
 		const initialValue = customThemeColors[property] || defaultValue;
@@ -640,16 +640,21 @@ const initSettings = body => {
 		const title =
 			property.replace('x-', 'x').replace(/-/g, ' ').toTitleCase();
 		
-		const colorPickerWrapper =
-			$new('.color-picker-wrapper');
+		const colorOption =
+			$new('.color-option')
+				.attr('style', `--color: var(--${property})`);
 		
-		const colorPickerLabel =
-			$new('label')
-				.attr('for', id)
+		const colorPickerTitle =
+			$new('.title')
 				.text(title)
 				.element();
 		
 		const colorPicker =
+			$new('label.color-picker')
+				.attr('for', id)
+				.element();
+		
+		const colorInput =
 			$new('input[type=color]')
 				.id(id)
 				.attr('value', initialValue)
@@ -657,21 +662,21 @@ const initSettings = body => {
 				.attr('data-css-property', property)
 				.element();
 		
-		const resetButton =
-			$new('button')
-				.text('Reset')
+		const resetIcon =
+			$new('i')
+				.class('home fad fa-trash-alt')
 				.on('click', e => {
 					const {
 						dataset: { cssProperty }
-					} = colorPicker;
+					} = colorInput;
 					
-					colorPicker.value = defaultValue;
+					colorInput.value = defaultValue;
 					
 					delete customThemeColors[cssProperty];
 					updateCustomThemeStyle();
 				});
 		
-		colorPicker.on('change', e => {
+		colorInput.on('change', e => {
 			const {
 				value,
 				dataset: { cssProperty }
@@ -682,16 +687,20 @@ const initSettings = body => {
 			updateCustomThemeStyle();
 		});
 		
-		colorPickers.push(colorPicker);
+		colorInputs.push(colorInput);
 		
-		const colorPickerWrapperBottom = $new('div');
-		colorPickerWrapperBottom.append(colorPicker);
-		colorPickerWrapperBottom.append(resetButton);
+		const colorPickerWrapper =
+			$new('.color-picker-wrapper')
+				.append(colorPicker)
+				.element();
 		
-		colorPickerWrapper.append(colorPickerLabel);
-		colorPickerWrapper.append(colorPickerWrapperBottom);
+		colorPickerWrapper.append(colorInput);
+		colorPickerWrapper.append(resetIcon);
 		
-		settingsModal.append(colorPickerWrapper);
+		colorOption.append(colorPickerTitle);
+		colorOption.append(colorPickerWrapper);
+		
+		settingsModal.append(colorOption);
 	};
 	
 	createColorPicker('text-color', 'white');
@@ -716,7 +725,7 @@ const initSettings = body => {
 	const resetAllCustomColors = e => {
 		Object.keys(customThemeColors).forEach(k => delete customThemeColors[k]);
 		
-		colorPickers.forEach(colorPicker => {
+		colorInputs.forEach(colorPicker => {
 			colorPicker.value = colorPicker.dataset.defaultValue;
 		});
 		
