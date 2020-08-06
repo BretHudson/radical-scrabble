@@ -58,30 +58,78 @@ const konami = [
 
 const latestKeys = Array.from({ length: konami.length });
 
-const dictionary = [
-	'awesome',
-	//'badass',
-	//'baller',
-	'bitchin',
-	'boss',
-	'cool',
-	'dope',
-	'epic',
-	'fresh',
-	'gnarly',
-	'groovy',
-	//'hip',
-	//'lit',
-	'mint',
-	'radical',
-	'righteous',
-	'rockin',
-	'sweet',
-	'sick',
-	'tight',
-	'tubular',
-	'wicked',
-];//.slice(0, 1);
+const dictionaries = [
+	[ 
+		'fallus', 
+		'phaked', 
+		'phamous', 
+		'phantastic', 
+		'phantasy', 
+		'phart', 
+		'phast', 
+		'phiend', 
+		'phined', 
+		'phired', 
+		'phocus', 
+		'pholks', 
+		'phollower', 
+		'phool', 
+		'phoreword', 
+		'phorward', 
+		'phreak', 
+		'phree', 
+		'phriend', 
+		'phrosty', 
+		'phuck', 
+		'phunky', 
+		'phurious' 
+	],
+	[ 
+		'awesome', 
+		'bitchin', 
+		'boss', 
+		'cool', 
+		'dope', 
+		'epic', 
+		'fresh', 
+		'gnarly', 
+		'groovy', 
+		'mint', 
+		'radical', 
+		'righteous', 
+		'rockin', 
+		'sweet', 
+		'sick', 
+		'tight', 
+		'tubular', 
+		'wicked' 
+	],
+	[ 
+		'apple', 
+		'banana', 
+		'cherry', 
+		'dragonfruit', 
+		'durian', 
+		'grape', 
+		'grapefruit', 
+		'kiwi', 
+		'lychee', 
+		'mango', 
+		'olive', 
+		'orange', 
+		'papaya', 
+		'pomelo', 
+		'peach', 
+		'pear', 
+		'pineapple', 
+		'plum', 
+		'rambutan', 
+		'redberry', 
+		'tomato' 
+	]
+];
+
+const dictionary = dictionaries[0];
 
 const themes = [
 	{

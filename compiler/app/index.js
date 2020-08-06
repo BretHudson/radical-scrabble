@@ -3,16 +3,40 @@ const fs = require('fs');
 const http = require('http');
 const path = require('path');
 
-const baseDirectory = path.join(__dirname, '../..');
+const baseCompilerDirectory = path.join(__dirname, '..');
+const baseWebAppDirectory = path.join(__dirname, '../..');
 const watchDirs = [
-	path.join(baseDirectory, 'js'),
-	path.join(baseDirectory, 'css')
+	path.join(baseCompilerDirectory, 'word-lists'),
+	path.join(baseWebAppDirectory, 'js'),
+	path.join(baseWebAppDirectory, 'css')
 ];
 
+const wordListsDir = path.join(baseCompilerDirectory, 'word-lists');
+
 const compile = () => {
-	const styl = fs.readFileSync(path.join(baseDirectory, 'css', 'styles.styl'), 'utf8');
+	// Pull in the styles
+	const styl = fs.readFileSync(path.join(baseWebAppDirectory, 'css', 'styles.styl'), 'utf8');
 	
 	const replacements = {};
+	
+	// Word lists
+	const wordListFileNames = JSON.parse(fs.readFileSync(path.join(wordListsDir, 'index.json'), 'utf8'));
+	
+	const wordLists = [];
+	wordListFileNames.forEach(fileName => {
+		const fileContents = fs.readFileSync(path.join(wordListsDir, fileName), 'utf8');
+		const words =
+			fileContents
+				.replace(/\r/g, '')
+				.split('\n')
+				.filter(str => !str.startsWith('//'));
+		wordLists.push(words);
+	});
+	
+	replacements['{{wordLists}}'] = '[' +
+		wordLists
+			.map(list => `\n\t[ ${list.map(v => `\n\t\t'${v}'`).join(', ')} \n\t]`)
+			.join(',') + '\n]';
 	
 	// Theme Colors
 	{
@@ -46,13 +70,13 @@ const compile = () => {
 		replacements['{{themes}}'] = themes;
 	}
 	
-	let js = fs.readFileSync(path.join(baseDirectory, 'js', '_main.bs'), 'utf8');
+	let js = fs.readFileSync(path.join(baseWebAppDirectory, 'js', '_main.bs'), 'utf8');
 	
 	Object.entries(replacements).forEach(([k, v]) => {
 		js = js.replace(k, v);
 	});
 	
-	fs.writeFileSync(path.join(baseDirectory, 'js', 'main.js'), js);
+	fs.writeFileSync(path.join(baseWebAppDirectory, 'js', 'main.js'), js);
 };
 
 const watcher = chokidar.watch(watchDirs);
@@ -61,9 +85,16 @@ watcher.on('change', async path => {
 	const [filename] = path.split('\\').reverse();
 	
 	switch (filename) {
+		case 'index.json':
 		case 'styles.styl':
 		case '_main.bs': {
 			compile();
+		} break;
+		
+		default: {
+			if (/\\word-lists\\[a-z-]+\.txt$/.test(path)) {
+				compile();
+			}
 		} break;
 	}
 });

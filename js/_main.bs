@@ -58,30 +58,9 @@ const konami = [
 
 const latestKeys = Array.from({ length: konami.length });
 
-const dictionary = [
-	'awesome',
-	//'badass',
-	//'baller',
-	'bitchin',
-	'boss',
-	'cool',
-	'dope',
-	'epic',
-	'fresh',
-	'gnarly',
-	'groovy',
-	//'hip',
-	//'lit',
-	'mint',
-	'radical',
-	'righteous',
-	'rockin',
-	'sweet',
-	'sick',
-	'tight',
-	'tubular',
-	'wicked',
-];//.slice(0, 1);
+const dictionaries = {{wordLists}};
+
+const dictionary = dictionaries[0];
 
 const themes = [
 	{
