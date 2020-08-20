@@ -605,6 +605,22 @@ const initSettings = body => {
 			.children(themes.map(createOption))
 			.element();
 	
+	const colorOptions = $new('.color-options').element();
+	
+	const setCustomColorOptionsVisibility = () => {
+		switch (currentTheme) {
+			case 'theme-custom': {
+				colorOptions.classList.add('show');
+			} break;
+			
+			default: {
+				colorOptions.classList.remove('show');
+			} break;
+		}
+	};
+	
+	setCustomColorOptionsVisibility();
+	
 	themeDropdown.on('change', e => {
 		const { value } = e.target;
 		document.body.classList.remove(currentTheme);
@@ -613,6 +629,8 @@ const initSettings = body => {
 		document.body.classList.add(currentTheme);
 		
 		localStorage.setItem('theme', currentTheme);
+		
+		setCustomColorOptionsVisibility();
 	});
 	
 	themeDropdown.value = currentTheme;
@@ -700,7 +718,7 @@ const initSettings = body => {
 		colorOption.append(colorPickerTitle);
 		colorOption.append(colorPickerWrapper);
 		
-		settingsModal.append(colorOption);
+		colorOptions.append(colorOption);
 	};
 	
 	createColorPicker('text-color', 'white');
@@ -738,7 +756,9 @@ const initSettings = body => {
 			.on('click', resetAllCustomColors)
 			.element();
 	
-	settingsModal.append(resetAllButton);
+	colorOptions.append(resetAllButton);
+	
+	settingsModal.append(colorOptions);
 	
 	body.append(overlay);
 	body.append(settingsModal);
