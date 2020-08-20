@@ -40,7 +40,8 @@ const KEYS = {
 	B: 66,
 	A: 65,
 	SPACE: 32,
-	ENTER: 13
+	ENTER: 13,
+	SLASH: 191,
 };
 
 const konami = [
@@ -94,6 +95,11 @@ const LETTER_POINTS = { A: 1, B: 3, C: 3, D: 2, E: 1, F: 4, G: 2, H: 4, I: 1, J:
 const openSettings = () => {
 	overlay.classList.add('show');
 	settingsModal.classList.add('show');
+};
+
+const toggleSettings = () => {
+	overlay.classList.toggle('show');
+	settingsModal.classList.toggle('show');
 };
 
 const closeSettings = () => {
@@ -513,8 +519,6 @@ const initSettings = body => {
 		closeSettings();
 	});
 	
-	openSettings();
-	
 	const createOption = ({ title, value }) => $new('option').text(title).attr('value', value);
 	
 	let currentTheme = localStorage.getItem('theme') || themes[0].option;
@@ -723,23 +727,32 @@ document.on('DOMContentLoaded', (e) => {
 	window.on('touchend', dragEnd);
 	
 	document.on('keydown', e => {
-		switch (e.keyCode) {
-			case KEYS.SPACE:
-			case KEYS.ENTER: {
-				let valid = true;
-				for (let i = 0, n = konami.length; valid && (i < n); ++i) {
-					valid = (latestKeys[i] === konami[i]); 
-				}
-				
-				if (valid) {
-					// TODO(bret): Do something special!
-					console.log('you have entered the konami code');
-				}
-			} break;
+		if (e.ctrlKey) {
+			switch (e.keyCode) {
+				case KEYS.SLASH: {
+					e.preventDefault();
+					toggleSettings();
+				} break;
+			}
+		} else {
+			switch (e.keyCode) {
+				case KEYS.SPACE:
+				case KEYS.ENTER: {
+					let valid = true;
+					for (let i = 0, n = konami.length; valid && (i < n); ++i) {
+						valid = (latestKeys[i] === konami[i]); 
+					}
+					
+					if (valid) {
+						// TODO(bret): Do something special!
+						console.log('you have entered the konami code');
+					}
+				} break;
+			}
+			
+			latestKeys.shift();
+			latestKeys.push(e.keyCode);
 		}
-		
-		latestKeys.shift();
-		latestKeys.push(e.keyCode);
 	});
 });
 
