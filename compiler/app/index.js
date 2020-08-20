@@ -7,7 +7,7 @@ const baseCompilerDirectory = path.join(__dirname, '..');
 const baseWebAppDirectory = path.join(__dirname, '../..');
 const watchDirs = [
 	path.join(baseCompilerDirectory, 'word-lists'),
-	path.join(baseWebAppDirectory, 'js'),
+	path.join(baseCompilerDirectory, 'js'),
 	path.join(baseWebAppDirectory, 'css')
 ];
 
@@ -71,7 +71,7 @@ const compile = () => {
 		replacements['{{themes}}'] = themes;
 	}
 	
-	let js = fs.readFileSync(path.join(baseWebAppDirectory, 'js', '_main.bs'), 'utf8');
+	let js = fs.readFileSync(path.join(baseCompilerDirectory, 'js', 'main.bs'), 'utf8');
 	
 	Object.entries(replacements).forEach(([k, v]) => {
 		js = js.replace(k, v);
@@ -88,7 +88,7 @@ watcher.on('change', async path => {
 	switch (filename) {
 		case 'index.json':
 		case 'styles.styl':
-		case '_main.bs': {
+		case 'main.bs': {
 			compile();
 		} break;
 		
