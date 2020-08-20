@@ -29,7 +29,8 @@ const compile = () => {
 			fileContents
 				.replace(/\r/g, '')
 				.split('\n')
-				.filter(str => !str.startsWith('//'));
+				.map(str => str.trim())
+				.filter(str => str.length && !str.startsWith('//'));
 		wordLists.push(words);
 	});
 	
