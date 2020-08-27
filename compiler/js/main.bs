@@ -519,44 +519,19 @@ const initSettings = body => {
 	overlay = $new('#overlay').element();
 	settingsModal = $new('#settings-modal').element();
 	
-	body.append(overlay);
-	body.append(settingsModal);
-};
-
-const initThemingPanel = body => {
-	themingPanel = $new('#theming-panel').element();
-	
-	const mainContent = $new('.main-content').element();
-	
 	overlay.on('click', e => {
 		closeSettings();
 	});
 	
-	const createOption = ({ title, value }) => $new('option').text(title).attr('value', value);
-	
 	let currentTheme = localStorage.getItem('theme') || themes[0].option;
 	document.body.classList.add(currentTheme);
+	
+	const createOption = ({ title, value }) => $new('option').text(title).attr('value', value);
 	
 	const themeDropdown =
 		$new('select')
 			.children(themes.map(createOption))
 			.element();
-	
-	const colorOptions = $new('.color-options').element();
-	
-	const setCustomColorOptionsVisibility = () => {
-		switch (currentTheme) {
-			case 'theme-custom': {
-				colorOptions.classList.add('show');
-			} break;
-			
-			default: {
-				colorOptions.classList.remove('show');
-			} break;
-		}
-	};
-	
-	setCustomColorOptionsVisibility();
 	
 	themeDropdown.on('change', e => {
 		const { value } = e.target;
@@ -566,13 +541,22 @@ const initThemingPanel = body => {
 		document.body.classList.add(currentTheme);
 		
 		localStorage.setItem('theme', currentTheme);
-		
-		setCustomColorOptionsVisibility();
 	});
 	
 	themeDropdown.value = currentTheme;
 	
-	mainContent.append(themeDropdown);
+	settingsModal.append(themeDropdown);
+	
+	body.append(overlay);
+	body.append(settingsModal);
+};
+
+const initThemingPanel = body => {
+	themingPanel = $new('#theming-panel').element();
+	
+	const mainContent = $new('.main-content').element();
+	
+	const colorOptions = $new('.color-options').element();
 	
 	const customThemeColors = JSON.parse(localStorage.getItem('custom-theme')) || {};
 	

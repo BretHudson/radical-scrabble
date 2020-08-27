@@ -572,17 +572,14 @@ $themingPanelSidebar = 4em
 	height: 100vh
 	left: 0
 	top: 0
-	// font-size: 1.3em
 	background: #877
 	transition: 0.3s transform
 	z-index: 1000
 	&.collapsed
 		transform: "translateX(-%s)" % $themingPanelWidth
 	.main-content
-		align-items: center
 		overflow-y: auto
 		height: 100%
-		padding: 6em
 		width: $themingPanelWidth
 	.bar
 		display: block
@@ -602,13 +599,13 @@ $themingPanelSidebar = 4em
 		display: flex
 
 .color-options
-	display: none
+	display: flex
 	width: 100%
+	min-height: 100%
 	flex-direction: column
 	justify-content: center
 	align-items: center
-	&.show
-		display: flex
+	padding: 6em
 	button
 		font-size: 3em
 		margin-top: 1em
