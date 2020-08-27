@@ -89,6 +89,7 @@ watcher.on('change', async path => {
 		case 'index.json':
 		case 'styles.styl':
 		case 'main.bs': {
+			console.log('compiling due to change: ', filename);
 			compile();
 		} break;
 		

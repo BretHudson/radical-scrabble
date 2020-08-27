@@ -32,7 +32,7 @@ const version = '0.2.7';
 
 const RENDER_BOARD = true;
 
-const KEYS = {
+const KEYCODES = {
 	LEFT: 37,
 	UP: 38,
 	RIGHT: 39,
@@ -41,20 +41,24 @@ const KEYS = {
 	A: 65,
 	SPACE: 32,
 	ENTER: 13,
-	SLASH: 191,
+};
+
+const KEYS = {
+	COMMA: ',',
+	SLASH: '/',
 };
 
 const konami = [
-	KEYS.UP,
-	KEYS.UP,
-	KEYS.DOWN,
-	KEYS.DOWN,
-	KEYS.LEFT,
-	KEYS.RIGHT,
-	KEYS.LEFT,
-	KEYS.RIGHT,
-	KEYS.B,
-	KEYS.A
+	KEYCODES.UP,
+	KEYCODES.UP,
+	KEYCODES.DOWN,
+	KEYCODES.DOWN,
+	KEYCODES.LEFT,
+	KEYCODES.RIGHT,
+	KEYCODES.LEFT,
+	KEYCODES.RIGHT,
+	KEYCODES.B,
+	KEYCODES.A
 ];
 
 const latestKeys = Array.from({ length: konami.length });
@@ -510,10 +514,19 @@ const resize = e => {
 	}
 };
 
-let overlay, settingsModal;
+let overlay, settingsModal, themingPanel;
 const initSettings = body => {
 	overlay = $new('#overlay').element();
 	settingsModal = $new('#settings-modal').element();
+	
+	body.append(overlay);
+	body.append(settingsModal);
+};
+
+const initThemingPanel = body => {
+	themingPanel = $new('#theming-panel').element();
+	
+	const mainContent = $new('.main-content').element();
 	
 	overlay.on('click', e => {
 		closeSettings();
@@ -559,7 +572,7 @@ const initSettings = body => {
 	
 	themeDropdown.value = currentTheme;
 	
-	settingsModal.append(themeDropdown);
+	mainContent.append(themeDropdown);
 	
 	const customThemeColors = JSON.parse(localStorage.getItem('custom-theme')) || {};
 	
@@ -639,8 +652,8 @@ const initSettings = body => {
 		colorPickerWrapper.append(colorInput);
 		colorPickerWrapper.append(resetIcon);
 		
-		colorOption.append(colorPickerTitle);
 		colorOption.append(colorPickerWrapper);
+		colorOption.append(colorPickerTitle);
 		
 		colorOptions.append(colorOption);
 	};
@@ -665,10 +678,22 @@ const initSettings = body => {
 	
 	colorOptions.append(resetAllButton);
 	
-	settingsModal.append(colorOptions);
+	mainContent.append(colorOptions);
 	
-	body.append(overlay);
-	body.append(settingsModal);
+	const sidebar =
+		$new('.bar')
+			.on('click', (e) => {
+				themingPanel.classList.toggle('collapsed');
+			})
+			.element();
+	
+	themingPanel.append(mainContent);
+	themingPanel.append(sidebar);
+	
+	body.append(themingPanel);
+	
+	themingPanel.classList.add('show');
+	themingPanel.classList.add('collapsed');
 };
 
 document.on('DOMContentLoaded', (e) => {
@@ -681,6 +706,7 @@ document.on('DOMContentLoaded', (e) => {
 	initGrid(body, progress);
 	
 	initSettings(body);
+	initThemingPanel(body);
 	
 	resize();
 	
@@ -727,17 +753,23 @@ document.on('DOMContentLoaded', (e) => {
 	window.on('touchend', dragEnd);
 	
 	document.on('keydown', e => {
+		console.log(e.key);
 		if (e.ctrlKey) {
-			switch (e.keyCode) {
-				case KEYS.SLASH: {
+			console.log(e.key);
+			switch (e.key) {
+				case KEYS.COMMA: {
 					e.preventDefault();
 					toggleSettings();
+				} break;
+				
+				case KEYS.SLASH: {
+					e.preventDefault();
 				} break;
 			}
 		} else {
 			switch (e.keyCode) {
-				case KEYS.SPACE:
-				case KEYS.ENTER: {
+				case KEYCODES.SPACE:
+				case KEYCODES.ENTER: {
 					let valid = true;
 					for (let i = 0, n = konami.length; valid && (i < n); ++i) {
 						valid = (latestKeys[i] === konami[i]); 
