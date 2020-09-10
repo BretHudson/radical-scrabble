@@ -68,6 +68,7 @@ const dictionaries = [
 		'awesome', 
 		'bitchin', 
 		'boss', 
+		'cowabunga', 
 		'cool', 
 		'dope', 
 		'epic', 
@@ -834,9 +835,7 @@ document.on('DOMContentLoaded', (e) => {
 	window.on('touchend', dragEnd);
 	
 	document.on('keydown', e => {
-		console.log(e.key);
 		if (e.ctrlKey) {
-			console.log(e.key);
 			switch (e.key) {
 				case KEYS.COMMA: {
 					e.preventDefault();
