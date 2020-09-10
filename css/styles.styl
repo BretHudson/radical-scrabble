@@ -546,13 +546,15 @@ header
 	&.show
 		display: block
 
+$modalColor = #877
+
 #settings-modal
 	position: absolute
 	display: none
 	flex-direction: column
 	justify-content: center
 	align-items: center
-	background: #877
+	background: $modalColor
 	width: 100em
 	min-height: 100em
 	left: 50%
@@ -566,15 +568,21 @@ header
 $themingPanelWidth = 80em
 $themingPanelSidebar = 4em
 
+themingPanelBorderRadius()
+	$radius = ($themingPanelSidebar / 1.5)
+	border-top-right-radius: $radius
+	border-bottom-right-radius: $radius
+
 #theming-panel
 	position: absolute
 	display: none
 	height: 100vh
 	left: 0
 	top: 0
-	background: #877
+	background: $modalColor
 	transition: 0.3s transform
 	z-index: 1000
+	themingPanelBorderRadius()
 	&.collapsed
 		transform: "translateX(-%s)" % $themingPanelWidth
 	.main-content
@@ -586,15 +594,40 @@ $themingPanelSidebar = 4em
 		position: relative
 		width: $themingPanelSidebar
 		cursor: pointer
-		&::after
-			content: ''
+		i
 			position: absolute
+			font-size: 4.5em
+			z-index: 10
+			top: 50%
+			left: 100%
+			transform: translate(-50%, -50%) rotate(270deg)
+			transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)
+			--fa-secondary-opacity: 1.0
+			^[0].collapsed ^[1..-1]
+				transform: translate(-50%, -50%)
+		&::before
+			top: 50%
+			transform: translateY(-50%)
+			width: $themingPanelSidebar
+			height: 10.25em
+			left: $themingPanelSidebar
+			background: $modalColor
+			themingPanelBorderRadius()
+		&::after
 			left: 0
 			top: 0
 			right: 0
 			bottom: 0
+			themingPanelBorderRadius()
+		&::before
+		&::after
+			content: ''
+			position: absolute
+			transition: background 0.1s
 			^[0..-2]:hover^[-1..-1]
 				background: rgba(white, 0.3)
+				// TODO(bret): c'mon now...
+				background: #ACA0A0
 	&.show
 		display: flex
 

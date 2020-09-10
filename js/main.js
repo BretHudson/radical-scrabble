@@ -764,6 +764,7 @@ const initThemingPanel = body => {
 	
 	const sidebar =
 		$new('.bar')
+			.child($new('i').class('fad fa-bars'))
 			.on('click', (e) => {
 				themingPanel.classList.toggle('collapsed');
 			})
