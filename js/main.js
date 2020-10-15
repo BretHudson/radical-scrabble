@@ -652,7 +652,20 @@ const initThemingPanel = body => {
 	
 	const colorInputs = [];
 	
+	const colorPickerTemp = document.createElement('div');
+	document.body.appendChild(colorPickerTemp);
+	
 	const createColorPicker = (property, defaultValue) => {
+		colorPickerTemp.style.color = defaultValue;
+		defaultValue = getComputedStyle(colorPickerTemp).color;
+		
+		const rgbRegex = /rgba?\((\d+), ?(\d+), ?(\d+)/;
+		const [, ...rgb] = defaultValue.match(rgbRegex);
+		
+		defaultValue =
+			rgb.map(v => +v)
+				.reduce((acc, v) => acc + v.toString(16).padStart(2, '0'), '#');
+		
 		const initialValue = customThemeColors[property] || defaultValue;
 		
 		const id = `input-color-${property}`;
@@ -740,6 +753,8 @@ const initThemingPanel = body => {
 	createColorPicker('word-holder-color', '#633');
 	createColorPicker('word-holder-border-color', '#311');
 	
+	
+	colorPickerTemp.remove();
 	
 	const resetAllCustomColors = e => {
 		Object.keys(customThemeColors).forEach(k => delete customThemeColors[k]);
