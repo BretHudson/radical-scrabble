@@ -24,6 +24,9 @@ html
 	--page-background-color: #685B87 /* themeColor */
 	--board-color: #2f2f69 /* themeColor */
 
+	// --settings-panel-color: #877
+	--settings-panel-color: #99859e /* themeColor */
+
 	--nav-button-border-color: #ffffff99 /* themeColor */
 	--nav-button-background-color: #44335566 /* themeColor */
 
@@ -47,6 +50,8 @@ html
 	--text-color: white
 	--page-background-color: #DC1D87
 	--board-color: #333
+
+	--settings-panel-color: #c55794
 
 	--nav-button-border-color: #333
 	--nav-button-background-color: rgba(#000, 0.7)
@@ -76,6 +81,8 @@ html
 	--page-background-color: #FDD
 	--board-color: #F3F3F3
 
+	--settings-panel-color: #DDF
+
 	--nav-button-border-color: #C99
 	--nav-button-background-color: rgba(#f88, 0.4)
 
@@ -100,6 +107,8 @@ html
 	--text-color: magenta
 	--page-background-color: black
 	--board-color: #2f2f69
+
+	--settings-panel-color: #FF831A
 
 	--nav-button-border-color: rgba(255, 255, 255, 0.6)
 	--nav-button-background-color: rgba(#435, 0.4)
@@ -546,15 +555,13 @@ header
 	&.show
 		display: block
 
-$modalColor = #877
-
 #settings-modal
 	position: absolute
 	display: none
 	flex-direction: column
 	justify-content: center
 	align-items: center
-	background: $modalColor
+	background: var(--settings-panel-color)
 	width: 100em
 	min-height: 100em
 	left: 50%
@@ -579,7 +586,7 @@ themingPanelBorderRadius()
 	height: 100vh
 	left: 0
 	top: 0
-	background: $modalColor
+	background: var(--settings-panel-color)
 	transition: 0.3s transform
 	z-index: 1000
 	themingPanelBorderRadius()
@@ -611,7 +618,7 @@ themingPanelBorderRadius()
 			width: $themingPanelSidebar
 			height: 10.25em
 			left: $themingPanelSidebar
-			background: $modalColor
+			background: var(--settings-panel-color)
 			themingPanelBorderRadius()
 		&::after
 			left: 0
@@ -640,8 +647,23 @@ themingPanelBorderRadius()
 	align-items: center
 	padding: 6em
 	button
-		font-size: 3em
+		cursor: pointer
+		font-size: 2.75em
 		margin-top: 1em
+		border-radius: 10ex
+		outline: none
+		padding: 0.75em 1.25em
+		text-transform: uppercase
+		background: black
+		color: white
+		border: 1em solid white
+		box-shadow: 0 0 .08em .08em black
+		$length = 0.1s
+		transition: $length background, $length transform, $length border
+		&:hover
+			background: #aa2222
+			transform: scale(1.05)
+			border: 1em solid #ffe3e3
 
 .color-option
 	font-size: 3em

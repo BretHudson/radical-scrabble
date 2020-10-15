@@ -738,6 +738,7 @@ const initThemingPanel = body => {
 	createColorPicker('text-color', 'white');
 	createColorPicker('page-background-color', '#685B87');
 	createColorPicker('board-color', '#2f2f69');
+	createColorPicker('settings-panel-color', '#99859e');
 	createColorPicker('nav-button-border-color', '#ffffff99');
 	createColorPicker('nav-button-background-color', '#44335566');
 	createColorPicker('wild-color', '#FFFF00');
