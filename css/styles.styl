@@ -708,13 +708,21 @@ themingPanelBorderRadius()
 		cursor: pointer
 		border: .21em solid white
 		box-shadow: 0 0 .08em .08em black
+		transition: 0.1s transform
 		&:hover
 			transform: scale(1.1)
 	i
 		margin: 0 0.5em
-		&:hover
-			cursor: pointer
-			transform: scale(1.1)
+		opacity: 0
+		pointer-events: none
+		transition: 0.1s transform, 0.1s color, 0.1s opacity
+		&.enabled
+			opacity: 1
+			pointer-events: unset
+			&:hover
+				color: #ffdddd
+				cursor: pointer
+				transform: scale(1.2)
 	input[type=color]
 		opacity: 0
 		width: 1px

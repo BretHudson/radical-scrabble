@@ -702,11 +702,15 @@ const initThemingPanel = body => {
 						dataset: { cssProperty }
 					} = colorInput;
 					
-					colorInput.value = defaultValue;
+					colorInput.resetToDefault();
 					
 					delete customThemeColors[cssProperty];
 					updateCustomThemeStyle();
-				});
+				})
+				.element();
+		
+		if (initialValue !== defaultValue)
+			resetIcon.classList.add('enabled');
 		
 		colorInput.on('change', e => {
 			const {
@@ -715,6 +719,8 @@ const initThemingPanel = body => {
 			} = e.target;
 			
 			customThemeColors[cssProperty] = value;
+			
+			resetIcon.classList.add('enabled');
 			
 			updateCustomThemeStyle();
 		});
@@ -725,6 +731,11 @@ const initThemingPanel = body => {
 			$new('.color-picker-wrapper')
 				.append(colorPicker)
 				.element();
+		
+		colorInput.resetToDefault = () => {
+			colorInput.value = colorInput.dataset.defaultValue;
+			resetIcon.classList.remove('enabled');
+		};
 		
 		colorPickerWrapper.append(colorInput);
 		colorPickerWrapper.append(resetIcon);
@@ -760,9 +771,7 @@ const initThemingPanel = body => {
 	const resetAllCustomColors = e => {
 		Object.keys(customThemeColors).forEach(k => delete customThemeColors[k]);
 		
-		colorInputs.forEach(colorPicker => {
-			colorPicker.value = colorPicker.dataset.defaultValue;
-		});
+		colorInputs.forEach(input => input.resetToDefault());
 		
 		updateCustomThemeStyle();
 	};
