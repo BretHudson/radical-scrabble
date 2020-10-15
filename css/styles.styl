@@ -664,14 +664,19 @@ themingPanelBorderRadius()
 		// TODO(bret): Implement a hover effect
 		display: inline-block
 		background: var(--color)
-		width: 3em
-		height: 1em
-		border-radius: 0.5em
+		width: 3.2em
+		height: 1.3em
+		border-radius: 10ex
 		cursor: pointer
+		border: .21em solid white
+		box-shadow: 0 0 .08em .08em black
+		&:hover
+			transform: scale(1.1)
 	i
-		margin: 0 0.25em
+		margin: 0 0.5em
 		&:hover
 			cursor: pointer
+			transform: scale(1.1)
 	input[type=color]
 		opacity: 0
 		width: 1px

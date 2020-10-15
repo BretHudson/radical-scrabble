@@ -68,7 +68,6 @@ const dictionaries = [
 		'awesome', 
 		'bitchin', 
 		'boss', 
-		'cowabunga', 
 		'cool', 
 		'dope', 
 		'epic', 
