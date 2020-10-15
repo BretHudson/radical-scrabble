@@ -545,19 +545,22 @@ header
 
 #overlay
 	position: absolute
-	display: none
 	left: 0
 	right: 0
 	top: 0
 	bottom: 0
 	background: rgba(0, 0, 0, 0.3)
 	z-index: 999
+	opacity: 0
+	pointer-events: none
+	transition: 0.4s opacity
 	&.show
-		display: block
+		opacity: 1
+		pointer-events: unset
 
 #settings-modal
 	position: absolute
-	display: none
+	display: flex
 	flex-direction: column
 	justify-content: center
 	align-items: center
@@ -567,10 +570,15 @@ header
 	left: 50%
 	top: 50%
 	padding: 6em
-	transform: translate(-50%, -50%)
+	transform: translate(-50%, -65%) scale(0.75)
 	z-index: 1000
+	opacity: 0
+	pointer-events: none
+	transition: 0.2s transform, 0.2s opacity
 	&.show
-		display: flex
+		transform: translate(-50%, -50%)
+		opacity: 1
+		pointer-events: unset
 
 $themingPanelWidth = 80em
 $themingPanelSidebar = 4em
@@ -602,23 +610,32 @@ themingPanelBorderRadius()
 		width: $themingPanelSidebar
 		cursor: pointer
 		i
+			display: flex
+			justify-content: center
+			align-items: center
 			position: absolute
 			font-size: 4.5em
 			z-index: 10
+			background: var(--settings-panel-color)
+			width: (8 / 4.5)em
+			height: (8 / 4.5)em
+			padding: 0 1.1em
+			border-radius: 0.6em
 			top: 50%
 			left: 100%
 			transform: translate(-50%, -50%) rotate(270deg)
-			transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)
+			transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), padding 0.5s
 			--fa-secondary-opacity: 1.0
 			^[0].collapsed ^[1..-1]
 				transform: translate(-50%, -50%)
+				padding: 1.15em 0
 		&::before
 			top: 50%
 			transform: translateY(-50%)
 			width: $themingPanelSidebar
 			height: 10.25em
 			left: $themingPanelSidebar
-			background: var(--settings-panel-color)
+			background: transparent
 			themingPanelBorderRadius()
 		&::after
 			left: 0
@@ -631,10 +648,9 @@ themingPanelBorderRadius()
 			content: ''
 			position: absolute
 			transition: background 0.1s
+			z-index: 10000
 			^[0..-2]:hover^[-1..-1]
 				background: rgba(white, 0.3)
-				// TODO(bret): c'mon now...
-				background: #ACA0A0
 	&.show
 		display: flex
 
