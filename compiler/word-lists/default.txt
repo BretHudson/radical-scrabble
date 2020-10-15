@@ -3,7 +3,6 @@ awesome
 //baller
 bitchin
 boss
-cowabunga
 cool
 dope
 epic
