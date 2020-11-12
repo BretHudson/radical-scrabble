@@ -17,6 +17,25 @@ String.prototype.toTitleCase = function() {
 	return this.split(' ').map(v => v.substring(0, 1).toUpperCase() + v.substring(1).toLowerCase()).join(' ');
 };
 
+const createEnum = (...args) => {
+	return args.reduce((acc, val) => {
+		acc[val] = val;
+		return acc;
+	}, {});
+};
+
+const GAME_STATES = createEnum(
+	'PLAYING',
+	'SETTINGS',
+	'THEMING',
+);
+let gameState;
+const changeState = newState => {
+	console.log(`Changed state from ${gameState} to ${newState}`);
+	gameState = newState;
+};
+changeState(GAME_STATES.PLAYING);
+
 const boardSize = 15;
 let boardRect;
 const boardTiles = [];
@@ -179,16 +198,42 @@ const LETTER_POINTS = { A: 1, B: 3, C: 3, D: 2, E: 1, F: 4, G: 2, H: 4, I: 1, J:
 const openSettings = () => {
 	overlay.classList.add('show');
 	settingsModal.classList.add('show');
+	changeState(GAME_STATES.SETTINGS);
 };
 
 const toggleSettings = () => {
 	overlay.classList.toggle('show');
-	settingsModal.classList.toggle('show');
+	if (settingsModal.classList.toggle('show')) {
+		changeState(GAME_STATES.SETTINGS);
+	} else {
+		changeState(GAME_STATES.PLAYING);
+	}
 };
 
 const closeSettings = () => {
 	overlay.classList.remove('show');
 	settingsModal.classList.remove('show');
+	changeState(GAME_STATES.PLAYING);
+};
+
+const startEditTheme = () => {
+	overlay.classList.add('capture-pointer-events');
+	closeSettings();
+	changeState(GAME_STATES.THEMING);
+	setTimeout(() => {
+		themingPanel.classList.add('show');
+	}, 150);
+	setTimeout(() => {
+		themingPanel.classList.remove('collapsed');
+	}, 300);
+};
+
+const finishEditTheme = () => {
+	overlay.classList.remove('capture-pointer-events');
+	themingPanel.classList.remove('show');
+	openSettings();
+	changeState(GAME_STATES.SETTINGS);
+	themingPanel.classList.add('collapsed');
 };
 
 const actionSettings = () => {
@@ -594,13 +639,21 @@ const resize = e => {
 	}
 };
 
+
 let overlay, settingsModal, themingPanel;
 const initSettings = body => {
 	overlay = $new('#overlay').element();
 	settingsModal = $new('#settings-modal').element();
 	
 	overlay.on('click', e => {
-		closeSettings();
+		switch (gameState) {
+			case GAME_STATES.SETTINGS:
+				closeSettings();
+				break;
+			case GAME_STATES.THEMING:
+				themingPanel.classList.add('collapsed');
+				break;
+		}
 	});
 	
 	let currentTheme = localStorage.getItem('theme') || themes[0].option;
@@ -625,7 +678,14 @@ const initSettings = body => {
 	
 	themeDropdown.value = currentTheme;
 	
+	const themeButton =
+		$new('button')
+			.text('Edit Theme')
+			.on('click', startEditTheme)
+			.element();
+	
 	settingsModal.append(themeDropdown);
+	settingsModal.append(themeButton);
 	
 	body.append(overlay);
 	body.append(settingsModal);
@@ -776,12 +836,19 @@ const initThemingPanel = body => {
 		updateCustomThemeStyle();
 	};
 	
+	const finishedButton =
+		$new('button')
+			.text('All Done')
+			.on('click', finishEditTheme)
+			.element();
+	
 	const resetAllButton =
 		$new('button')
 			.text('Reset All Colors')
 			.on('click', resetAllCustomColors)
 			.element();
 	
+	colorOptions.append(finishedButton);
 	colorOptions.append(resetAllButton);
 	
 	mainContent.append(colorOptions);
@@ -799,7 +866,6 @@ const initThemingPanel = body => {
 	
 	body.append(themingPanel);
 	
-	themingPanel.classList.add('show');
 	themingPanel.classList.add('collapsed');
 };
 
