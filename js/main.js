@@ -47,7 +47,7 @@ const getBoardTile = (x, y) => {
 
 const getHoveringTile = (tile) => getBoardTile(+tile.dataset.x, +tile.dataset.y);
 
-const version = '0.2.7';
+const version = '0.3.0';
 
 const RENDER_BOARD = true;
 
