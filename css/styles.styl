@@ -588,6 +588,8 @@ themingPanelBorderRadius()
 	border-top-right-radius: $radius
 	border-bottom-right-radius: $radius
 
+$scrollbarFG = #D2BCD8
+
 #theming-panel
 	position: absolute
 	display: none
@@ -601,9 +603,23 @@ themingPanelBorderRadius()
 	&.collapsed
 		transform: "translateX(-%s)" % $themingPanelWidth
 	.main-content
+		z-index: 100
 		overflow-y: auto
 		height: 100%
 		width: $themingPanelWidth
+		scrollbar-width: thin
+		scrollbar-color: $scrollbarFG var(--settings-panel-color)
+		&::-webkit-scrollbar
+			width: 1rem
+		&::-webkit-scrollbar-track
+			background-color: cyan
+		&::-webkit-scrollbar
+			&-button
+				background-color: rgba(white, 0.9)
+			&-track
+				background-color: var(--settings-panel-color)
+			&-thumb
+				background-color: $scrollbarFG
 	.bar
 		display: block
 		position: relative
@@ -672,14 +688,15 @@ themingPanelBorderRadius()
 		text-transform: uppercase
 		background: black
 		color: white
-		border: 1em solid white
-		box-shadow: 0 0 .08em .08em black
+		$borderSize = 0.5em
 		$length = 0.1s
+		border: $borderSize solid white
+		box-shadow: 0 0 .08em .08em black
 		transition: $length background, $length transform, $length border
 		&:hover
 			background: #aa2222
 			transform: scale(1.05)
-			border: 1em solid #ffe3e3
+			border: $borderSize solid #ffe3e3
 
 .color-option
 	font-size: 3em
