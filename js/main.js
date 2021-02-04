@@ -58,31 +58,7 @@ const everyTileMatchesLetters = (letters) => (tile, i) => (!tile.dataset.letter)
 
 const everyTileMatchesWord = (word) => everyTileMatchesLetters(word.toUpperCase().split(''));
 
-const reduceLettersToPointsAcc = () => ({
-	wordPoints: 0,
-	wordMultiplier: 1,
-	total: 0
-});
-
-const reduceLettersToPoints = (x, y, rotated) => (acc, letter, i) => {
-	const [xx, yy] = [x + (!rotated && i), y + (rotated && i)];
-	const tile = getBoardTile(xx, yy);
-	
-	let curPoints = LETTER_POINTS[letter];
-	if (tile.hasClass('x-2-letter'))
-		curPoints *= 2;
-	if (tile.hasClass('x-3-letter'))
-		curPoints *= 3;
-	if (tile.hasClass('x-2-word'))
-		acc.wordMultiplier *= 2;
-	if (tile.hasClass('x-3-word'))
-		acc.wordMultiplier *= 3;
-	
-	acc.wordPoints += curPoints;
-	acc.total = acc.wordPoints * acc.wordMultiplier;
-	
-	return acc;
-};
+const getXYAtOffset = (x, y, i, rotated) => [x + (!rotated && i), y + (rotated && i)]
 
 const version = '0.3.0';
 
@@ -489,12 +465,12 @@ const initGrid = (body, progress) => {
 	wordsHolderElem = $new('.words-holder').element();
 	
 	// TODO(bret): Create an animation for these (probably set that up _after_ we've removed words based on wordsOnBoard (make these words animate in AFTER the progress words have been animated!)
-	for (const word of shuffle(dictionary))
-		addWord(word.toUpperCase());
+	shuffle(dictionary).forEach(addWord);
 	
 	if (progress !== null) {
 		const { wordsOnBoard } = progress;
-		let points = 0;
+		
+		let totalPoints = 0;
 		for (const w of wordsOnBoard) {
 			const {
 				word,
@@ -502,76 +478,73 @@ const initGrid = (body, progress) => {
 				rotated = false
 			} = w;
 			
-			let { x, y } = tileCoord;
+			const { x, y } = tileCoord;
 			
+			// TODO(bret): Gonna need to re-check these both still work
+			
+			// Check within bounds
 			const finalPos = word.length + (rotated === true) ? y : x;
 			const withinBoardBounds = (x >= 0) && (y >= 0) && (finalPos <= boardSize);
 			if (withinBoardBounds === false) break;
 			
+			// Make sure the user didn't cheat
 			const letters = word.toUpperCase().split('');
-			const tiles = getBoardTileSeq(x, y, word.length, rotated);
-			if (tiles.every(everyTileMatchesLetters(letters)) === false) break;
-			
-			// TODO(bret): At this point, we could set each tile's hoverTile and then use assignPointsToWord :)
-			const {
-				total: wordPoints
-			} = letters.reduce(reduceLettersToPoints(x, y, rotated), reduceLettersToPointsAcc());
-			
-			points += wordPoints;
+			const boardTiles = getBoardTileSeq(x, y, word.length, rotated);
+			if (boardTiles.every(everyTileMatchesLetters(letters)) === false) break;
 			
 			const wordElem = wordElems.getWord(word);
-			wordElem.dataset.x = tileCoord.x;
-			wordElem.dataset.y = tileCoord.y;
+			wordElem.dataset.x = x;
+			wordElem.dataset.y = y;
 			
-			if (rotated === true) {
+			const { tiles } = wordElem;
+			tiles.forEach((tile, i) => {
+				[tile.dataset.x, tile.dataset.y] = getXYAtOffset(x, y, i, rotated);
+			});
+			
+			if (rotated === true)
 				wordElem.classList.add('rotated');
-			}
 			
-			wordElem.points = wordPoints;
+			assignPointsToWord(wordElem);
+			totalPoints += wordElem.points;
 			
-			for (let i = 0, n = tiles.length; i < n; ++i) {
-				const tile = tiles[i];
-				
-				const wordTile = wordElem.children[i];
-				wordTile.dataset.x = tile.dataset.x;
-				wordTile.dataset.y = tile.dataset.y;
-				
+			boardTiles.forEach((boardTile, i) => {
 				const letter = letters[i];
-				tile.dataset.letter = letter;
-				tile.dataset.points = LETTER_POINTS[letter];
+				boardTile.dataset.letter = letter;
+				boardTile.dataset.points = LETTER_POINTS[letter];
 				
-				tile.dataset.stacked = +(tile.dataset.stacked || 0) + 1;
+				boardTile.dataset.stacked = +(boardTile.dataset.stacked || 0) + 1;
 				
-				tile.classList.remove('wild');
-				tile.classList.remove('x-2-letter');
-				tile.classList.remove('x-3-letter');
-				tile.classList.remove('x-2-word');
-				tile.classList.remove('x-3-word');
+				boardTile.classList.remove('wild');
+				boardTile.classList.remove('x-2-letter');
+				boardTile.classList.remove('x-3-letter');
+				boardTile.classList.remove('x-2-word');
+				boardTile.classList.remove('x-3-word');
 				
-				tile.classList.remove('no-letter');
+				boardTile.classList.remove('no-letter');
 				
-				tile.classList.add('has-letter');
+				boardTile.classList.add('has-letter');
 				
 				if (rotated) {
-					tile.classList.add('vertical');
+					boardTile.classList.add('vertical');
 					if (i === 0) {
-						tile.classList.add('top');
+						boardTile.classList.add('top');
 					} else if (i === word.length - 1) {
-						tile.classList.add('bottom');
+						boardTile.classList.add('bottom');
 					}
 				} else {
-					tile.classList.add('horizontal');
+					boardTile.classList.add('horizontal');
 					if (i === 0) {
-						tile.classList.add('left');
+						boardTile.classList.add('left');
 					} else if (i === word.length - 1) {
-						tile.classList.add('right');
+						boardTile.classList.add('right');
 					}
 				}
-			}
+			});
 			
 			removeWord(wordElem);
 		}
-		addPoints(points);
+		
+		addPoints(totalPoints);
 	}
 	
 	grid = Array.from({ length: boardSize }).map(c => Array.from({ length: boardSize }));
@@ -901,7 +874,7 @@ document.on('DOMContentLoaded', (e) => {
 	
 	// TODO(bret): Use requestAnimationFrame for the actual placement of the word?
 	const dragProgress = (e, t) => {
-		if (dragWord !== null) return;
+		if (dragWord === null) return;
 		
 		// If there are no buttons being pressed, return to hand
 		if (e.buttons === 0) {
@@ -918,7 +891,7 @@ document.on('DOMContentLoaded', (e) => {
 	window.on('touchmove', (e) => { dragProgress(e, e.touches[0]); }, { passive: false });
 	
 	const dragEnd = () => {
-		if (dragWord !== null) return;
+		if (dragWord === null) return;
 		
 		endWordDrag(dragWord);
 	}
@@ -1066,8 +1039,6 @@ const getPointsForTile = (hoverTile) => {
 };
 
 const assignPointsToWord = (word) => {
-	// TODO(bret): reduceLettersToPoints ?
-	
 	let multiplier = 1;
 	let points = 0;
 	for (const tile of word.tiles) {
@@ -1423,6 +1394,8 @@ wordElems.getWord = function(word) { return this[word.toUpperCase()]; };
 const resetWordElems = () => wordElems.splice(0);
 
 const addWord = (word) => {
+	word = word.toUpperCase();
+	
 	const wordElem = $new('.word').element();
 	wordElem.points = 0;
 	wordElem.str = word;
