@@ -17,27 +17,28 @@ String.prototype.toTitleCase = function() {
 	return this.split(' ').map(v => v.substring(0, 1).toUpperCase() + v.substring(1).toLowerCase()).join(' ');
 };
 
-const createEnum = (...args) => {
-	return args.reduce((acc, val) => {
-		acc[val] = val;
-		return acc;
-	}, {});
-};
+const createEnum = (...args) => args.reduce((acc, val) => {
+	acc[val] = val;
+	return acc;
+}, {});
 
+let gameState;
 const GAME_STATES = createEnum(
 	'PLAYING',
 	'SETTINGS',
 	'THEMING',
 );
-let gameState;
+
 const changeState = newState => {
 	console.log(`Changed state from ${gameState} to ${newState}`);
 	gameState = newState;
 };
+
+// TODO(bret): Handle states better
 changeState(GAME_STATES.PLAYING);
 
-const boardSize = 15;
 let boardRect;
+const boardSize = 15;
 const boardTiles = [];
 const getBoardTile = (x, y) => {
 	if ((x < 0) || (x >= boardSize) || (y < 0) || (y >= boardSize))
@@ -46,6 +47,42 @@ const getBoardTile = (x, y) => {
 };
 
 const getHoveringTile = (tile) => getBoardTile(+tile.dataset.x, +tile.dataset.y);
+
+const getBoardTileRow = (x, y, n) => Array.from({ length: n }, (_, i) => getBoardTile(x + i, y));
+
+const getBoardTileCol = (x, y, n) => Array.from({ length: n }, (_, i) => getBoardTile(x, y + i));
+
+const getBoardTileSeq = (x, y, n, rotated) => ((rotated) ? getBoardTileCol : getBoardTileRow)(x, y, n);
+
+const everyTileMatchesLetters = (letters) => (tile, i) => (!tile.dataset.letter) || (tile.dataset.letter === letters[i]);
+
+const everyTileMatchesWord = (word) => everyTileMatchesLetters(word.toUpperCase().split(''));
+
+const reduceLettersToPointsAcc = () => ({
+	wordPoints: 0,
+	wordMultiplier: 1,
+	total: 0
+});
+
+const reduceLettersToPoints = (x, y, rotated) => (acc, letter, i) => {
+	const [xx, yy] = [x + (!rotated && i), y + (rotated && i)];
+	const tile = getBoardTile(xx, yy);
+	
+	let curPoints = LETTER_POINTS[letter];
+	if (tile.hasClass('x-2-letter'))
+		curPoints *= 2;
+	if (tile.hasClass('x-3-letter'))
+		curPoints *= 3;
+	if (tile.hasClass('x-2-word'))
+		acc.wordMultiplier *= 2;
+	if (tile.hasClass('x-3-word'))
+		acc.wordMultiplier *= 3;
+	
+	acc.wordPoints += curPoints;
+	acc.total = acc.wordPoints * acc.wordMultiplier;
+	
+	return acc;
+};
 
 const version = '0.3.0';
 
@@ -243,7 +280,7 @@ const actionSettings = () => {
 const actionUndo = () => {
 	// TODO(bret): Probably make sure you can't do this while something is animating
 	if (playedWords.length > 0) {
-		let word = playedWords.pop();
+		const word = playedWords.pop();
 		let tile, tileHover;
 		for (let l = 0; l < word.tiles.length; ++l) {
 			tile = word.tiles[l];
@@ -271,10 +308,36 @@ const actionUndo = () => {
 	}
 };
 
-let undoButton, infoButton, resetButton;
+let undoButton, infoButton;
 
 const initGrid = (body, progress) => {
-	let headerElem = body.appendChild(
+	const navButtons = [
+		{
+			name: 'home',
+			faClass: 'fa-home-alt',
+			onClick: () => {},
+		},
+		{
+			name: 'info',
+			faClass: 'fa-info-square',
+			onClick: () => {},
+		},
+		{
+			name: 'settings',
+			faClass: 'fa-sliders-h-square',
+			onClick: actionSettings,
+		},
+		{
+			name: 'undo',
+			faClass: 'fa-undo-alt',
+			onClick: actionUndo,
+		},
+	];
+	
+	const mapDigit = t => $new('.digit').text(t);
+	const mapDigitColumn = () => $new('.column').child(...['-', '0', '.'].map(mapDigit));
+	
+	const headerElem = body.appendChild(
 		$new('header')
 			.children(
 				$new('.title').children(
@@ -282,38 +345,16 @@ const initGrid = (body, progress) => {
 					$new('.bottom').text('Scrabble')
 				),
 				$new('.nav').children(
-					$new('span#home')
-						.child($new('i').class('home fad fa-home-alt'))
-						/*.on('click', actionHome)*/,
-					$new('span#info')
-						.child($new('i').class('info fad fa-info-square'))
-						/*.on('click', actionInfo)*/,
-					$new('span#settings')
-						.child($new('i').class('settings fad fa-sliders-h-square'))
-						.on('click', actionSettings),
-					$new('span#undo')
-						.child($new('i').class('undo fad fa-undo-alt'))
-						.on('click', actionUndo),
+					...navButtons.map(({ name, faClass, onClick }) => {
+						return $new(`span#${name}`).child(
+							$new('i').class(`${name} fad ${faClass}`)
+						).on('click', onClick);
+					}),
 				),
 				$new('.points').children(
 					$new('.top').text('Points'),
-					// $new('.bottom').attr('data-points', '000'),
 					$new('.bottom').children(
-						$new('.column').child(
-							$new('.digit').text('-'),
-							$new('.digit').text('0'),
-							$new('.digit').text('.')
-						),
-						$new('.column').child(
-							$new('.digit').text('-'),
-							$new('.digit').text('0'),
-							$new('.digit').text('.')
-						),
-						$new('.column').child(
-							$new('.digit').text('-'),
-							$new('.digit').text('0'),
-							$new('.digit').text('.')
-						),
+						...Array.from({ length: 3 }, mapDigitColumn)
 					)
 				)
 			)
@@ -322,17 +363,14 @@ const initGrid = (body, progress) => {
 	pointsTitleElem = headerElem.q('.points .top');
 	pointsElem = headerElem.q('.points .bottom');
 	
+	[undoButton, infoButton] = ['#undo', '#info'].map(id => headerElem.q(id));
 	[pointsColHundreds, pointsColTens, pointsColOnes] = [...pointsElem.q('.column')]
-	
-	undoButton = headerElem.q('#undo');
-	infoButton = headerElem.q('#info');
-	resetButton = headerElem.q('#reset');
 	
 	const boardWrapper = body.appendChild($new('.board-wrapper').element());
 	boardElem = boardWrapper.appendChild($new('.board').element());
-	let wordsElem = body.appendChild($new('.words').element());
+	const wordsElem = body.appendChild($new('.words').element());
 	
-	let footerElem = body.appendChild(
+	const footerElem = body.appendChild(
 		$new('footer')
 			.children(
 				$new('a.author')
@@ -348,17 +386,17 @@ const initGrid = (body, progress) => {
 	);
 	
 	// Render board
-	let numTiles = boardSize * boardSize;
+	const numTiles = boardSize * boardSize;
 	if (RENDER_BOARD) {
 		grid = Array.from({ length: boardSize }).map(c => Array.from({ length: boardSize }));
 		
-		let centerPos = Math.floor(boardSize / 2);
+		const centerPos = Math.floor(boardSize / 2);
 		for (let t = 0; t < numTiles; ++t) {
-			let _x = (t % boardSize);
-			let _y = Math.floor(t / boardSize);
-			let x = Math.abs(centerPos - _x);
-			let y = Math.abs(centerPos - _y);
-			let d = Math.abs(x - y);
+			const _x = (t % boardSize);
+			const _y = Math.floor(t / boardSize);
+			const x = Math.abs(centerPos - _x);
+			const y = Math.abs(centerPos - _y);
+			const d = Math.abs(x - y);
 			
 			let className = '';
 			if ((x === 0) && (y === 0))
@@ -413,14 +451,13 @@ const initGrid = (body, progress) => {
 		const ratio = window.innerWidth / window.innerHeight;
 		
 		const landscape = ratio > 1.25;
-		let width, height;
-		if (landscape) {
-			width = window.innerWidth / ((boardSize << 1) + 1.5) / tileSize;
-			height = window.innerHeight / (3.0 + boardSize) / tileSize;
-		} else {
-			width = window.innerWidth / (boardSize + 0.5) / tileSize;
-			height = window.innerHeight / (navHeight + boardSize) / tileSize;
-		}
+		const [width, height] = (landscape) ? [
+			window.innerWidth / ((boardSize << 1) + 1.5) / tileSize,
+			window.innerHeight / (3.0 + boardSize) / tileSize
+		] : [
+			window.innerWidth / (boardSize + 0.5) / tileSize,
+			window.innerHeight / (navHeight + boardSize) / tileSize
+		]
 		
 		document.body.classList.add((landscape) ? 'landscape' : 'portrait');
 		document.body.classList.remove((landscape) ? 'portrait' : 'landscape');
@@ -467,52 +504,20 @@ const initGrid = (body, progress) => {
 			
 			let { x, y } = tileCoord;
 			
-			let finalPos = x;
-			if (rotated === true) {
-				finalPos = y;
-			}
-			finalPos += word.length;
+			const finalPos = word.length + (rotated === true) ? y : x;
+			const withinBoardBounds = (x >= 0) && (y >= 0) && (finalPos <= boardSize);
+			if (withinBoardBounds === false) break;
 			
-			let success = (x >= 0) && (y >= 0) && (finalPos <= boardSize);
-			
-			const tiles = [];
 			const letters = word.toUpperCase().split('');
+			const tiles = getBoardTileSeq(x, y, word.length, rotated);
+			if (tiles.every(everyTileMatchesLetters(letters)) === false) break;
 			
-			let wordPoints = 0;
-			let wordMultiplier = 1;
-			if (success === true) {
-				letters.forEach((letter, i) => {
-					const tile = getBoardTile(x, y);
-					
-					tiles.push(tile);
-					
-					if (tile.dataset.letter && (tile.dataset.letter !== letter)) {
-						success = false;
-						return;
-					}
-					
-					let curPoints = LETTER_POINTS[letter];
-					
-					if (tile.hasClass('x-2-letter'))
-						curPoints *= 2;
-					if (tile.hasClass('x-3-letter'))
-						curPoints *= 3;
-					if (tile.hasClass('x-2-word'))
-						wordMultiplier *= 2;
-					if (tile.hasClass('x-3-word'))
-						wordMultiplier *= 3;
-					
-					wordPoints += curPoints;
-					
-					if (rotated) {
-						++y;
-					} else {
-						++x;
-					}
-				});
-			}
+			// TODO(bret): At this point, we could set each tile's hoverTile and then use assignPointsToWord :)
+			const {
+				total: wordPoints
+			} = letters.reduce(reduceLettersToPoints(x, y, rotated), reduceLettersToPointsAcc());
 			
-			if (success === false) break;
+			points += wordPoints;
 			
 			const wordElem = wordElems.getWord(word);
 			wordElem.dataset.x = tileCoord.x;
@@ -522,9 +527,7 @@ const initGrid = (body, progress) => {
 				wordElem.classList.add('rotated');
 			}
 			
-			wordPoints *= wordMultiplier;
 			wordElem.points = wordPoints;
-			points += wordPoints;
 			
 			for (let i = 0, n = tiles.length; i < n; ++i) {
 				const tile = tiles[i];
@@ -573,12 +576,12 @@ const initGrid = (body, progress) => {
 	
 	grid = Array.from({ length: boardSize }).map(c => Array.from({ length: boardSize }));
 	
-	let centerPos = Math.floor(boardSize / 2);
+	const centerPos = Math.floor(boardSize / 2);
 	for (let t = 0; t < numTiles; ++t) {
-		let _x = (t % boardSize);
-		let _y = Math.floor(t / boardSize);
-		let x = Math.abs(centerPos - _x);
-		let y = Math.abs(centerPos - _y);
+		const _x = (t % boardSize);
+		const _y = Math.floor(t / boardSize);
+		const x = Math.abs(centerPos - _x);
+		const y = Math.abs(centerPos - _y);
 		
 		const speed = 0.04;
 		let delay = (x + y) * speed;
@@ -633,11 +636,7 @@ const debounce = (func, duration, immediate = false) => {
 };
 
 const onResizeCallbacks = [];
-const resize = e => {
-	for (let c of onResizeCallbacks) {
-		c(e);
-	}
-};
+const resize = e => onResizeCallbacks.forEach(c => c(e));
 
 
 let overlay, settingsModal, themingPanel;
@@ -701,6 +700,7 @@ const initThemingPanel = body => {
 	const customThemeColors = JSON.parse(localStorage.getItem('custom-theme')) || {};
 	
 	const updateCustomThemeStyle = () => {
+		// TODO(bret): Are we missing a closing } here???
 		let styleStr = '.theme-custom { ';
 		styleStr += Object.entries(customThemeColors).map(([k, v]) => `--${k}: ${v}`).join('; ');
 		colorStyle.textContent = styleStr;
@@ -873,7 +873,7 @@ document.on('DOMContentLoaded', (e) => {
 	document.head[0].append(style);
 	document.head[0].append(colorStyle);
 	
-	let body = document.body;
+	const body = document.body;
 	
 	const progress = JSON.parse(localStorage.getItem('progress'));
 	initGrid(body, progress);
@@ -895,31 +895,32 @@ document.on('DOMContentLoaded', (e) => {
 		}
 	};
 	
+	// TODO(bret): Do any other events need passive??
 	window.on('mousedown', (e) => { dragBegin(e, e); });
 	window.on('touchstart', (e) => { dragBegin(e, e.touches[0]); }, { passive: false });
 	
 	// TODO(bret): Use requestAnimationFrame for the actual placement of the word?
 	const dragProgress = (e, t) => {
-		if (dragWord !== null) {
-			// If there are no buttons being pressed, return to hand
-			if (e.buttons === 0) {
-				returnToHand(dragWord);
-				dragWord = null;
-				return;
-			}
-			
-			e.preventDefault();
-			onWordDrag(dragWord, t.clientX, t.clientY);
+		if (dragWord !== null) return;
+		
+		// If there are no buttons being pressed, return to hand
+		if (e.buttons === 0) {
+			returnToHand(dragWord);
+			dragWord = null;
+			return;
 		}
+		
+		e.preventDefault();
+		onWordDrag(dragWord, t.clientX, t.clientY);
 	};
 	
 	window.on('mousemove', (e) => { dragProgress(e, e); });
 	window.on('touchmove', (e) => { dragProgress(e, e.touches[0]); }, { passive: false });
 	
 	const dragEnd = () => {
-		if (dragWord !== null) {
-			endWordDrag(dragWord);
-		}
+		if (dragWord !== null) return;
+		
+		endWordDrag(dragWord);
 	}
 	
 	window.on('mouseup', dragEnd);
@@ -941,14 +942,9 @@ document.on('DOMContentLoaded', (e) => {
 			switch (e.keyCode) {
 				case KEYCODES.SPACE:
 				case KEYCODES.ENTER: {
-					let valid = true;
-					for (let i = 0, n = konami.length; valid && (i < n); ++i) {
-						valid = (latestKeys[i] === konami[i]); 
-					}
-					
-					if (valid) {
+					if (konami.every((k, i) => k === latestKeys[i])) {
 						// TODO(bret): Do something special!
-						console.log('you have entered the konami code');
+						console.log('you have entered the konami code!');
 					}
 				} break;
 			}
@@ -993,9 +989,8 @@ const createTile = (letter, x, y, className = '') => {
 	tile.classList.add(`${prefix}-letter`);
 	if (className !== '')
 		tile.classList.add(className);
-	if (prefix === 'has') {
+	if (prefix === 'has')
 		tile.classList.add('stop-animate');
-	}
 	tile.dataset.letter = letter || '';
 	tile.dataset.points = letter ? LETTER_POINTS[letter] : '';
 	tile.dataset.type = className;
@@ -1065,11 +1060,14 @@ const removeWord = (word) => {
 	playedWords.push(word);
 };
 
+// TODO(bret): What the fuck is this?
 const getPointsForTile = (hoverTile) => {
 	
 };
 
 const assignPointsToWord = (word) => {
+	// TODO(bret): reduceLettersToPoints ?
+	
 	let multiplier = 1;
 	let points = 0;
 	for (const tile of word.tiles) {
@@ -1199,9 +1197,7 @@ const assignToGrid = (word) => {
 };
 
 const updateColumn = (column, n, prev, next, fade = true) => {
-	if (n === +column.children[1].textContent) {
-		return;
-	}
+	if (n === +column.children[1].textContent) return;
 	
 	fade && column.classList.add('fade');
 	
@@ -1224,8 +1220,8 @@ const addPoints = (inc) => {
 	
 	const incSign = Math.sign(inc);
 	const incAbs = Math.abs(inc);
-	let length = 300 * Math.log2(incAbs) * 2;
-	let lengthPerDigit = length / incAbs;
+	const length = 300 * Math.log2(incAbs) * 2;
+	const lengthPerDigit = length / incAbs;
 	
 	let then = performance.now();
 	let elapsed = 0;
@@ -1289,9 +1285,7 @@ const addPoints = (inc) => {
 	window.requestAnimationFrame(animate);
 };
 
-const removePoints = (points) => {
-	addPoints(-points);
-};
+const removePoints = (points) => addPoints(-points);
 
 const returnToHand = (word) => {
 	window.requestAnimationFrame(() => {
@@ -1509,4 +1503,3 @@ const localStorageSetGood = () => {
 		wordsOnBoard
 	}));
 };
-
