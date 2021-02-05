@@ -69,7 +69,7 @@ const isTileSeqIntersectingCenter = (x, y, n, rotated, boardSize) => {
 	return (span <= center && span + n > center) && (axis === center);
 };
 
-const version = '0.3.0';
+const version = '0.3.1';
 
 const RENDER_BOARD = true;
 
