@@ -42,24 +42,24 @@ const boardSize = 15;
 
 const createGrid = boardSize => Array.from({ length: boardSize }, v => Array.from({ length: boardSize }));
 
-const boardTiles = [];
-const getBoardTile = (x, y) => {
+const boardSquares = [];
+const getBoardSquare = (x, y) => {
 	if ((x < 0) || (x >= boardSize) || (y < 0) || (y >= boardSize))
 		return null;
-	return boardTiles[y * boardSize + x];
+	return boardSquares[y * boardSize + x];
 };
 
-const getHoveringTile = (tile) => getBoardTile(+tile.dataset.x, +tile.dataset.y);
+const getUnderlappingSquare = (tile) => getBoardSquare(+tile.dataset.x, +tile.dataset.y);
 
-const getBoardTileRow = (x, y, n) => Array.from({ length: n }, (_, i) => getBoardTile(x + i, y));
+const getBoardSquareRow = (x, y, n) => Array.from({ length: n }, (_, i) => getBoardSquare(x + i, y));
 
-const getBoardTileCol = (x, y, n) => Array.from({ length: n }, (_, i) => getBoardTile(x, y + i));
+const getBoardSquareCol = (x, y, n) => Array.from({ length: n }, (_, i) => getBoardSquare(x, y + i));
 
-const getBoardTileSeq = (x, y, n, rotated) => ((rotated) ? getBoardTileCol : getBoardTileRow)(x, y, n);
+const getBoardSquareSeq = (x, y, n, rotated) => ((rotated) ? getBoardSquareCol : getBoardSquareRow)(x, y, n);
 
-const everyTileMatchesLetters = (letters) => (tile, i) => (!tile.dataset.letter) || (tile.dataset.letter === letters[i]);
+const everySquareMatchesLetters = (letters) => (tile, i) => (!tile.dataset.letter) || (tile.dataset.letter === letters[i]);
 
-const everyTileMatchesWord = (word) => everyTileMatchesLetters(word.toUpperCase().split(''));
+const everySquareMatchesWord = (word) => everySquareMatchesLetters(word.toUpperCase().split(''));
 
 const getXYAtOffset = (x, y, i, rotated) => [x + (!rotated && i), y + (rotated && i)];
 
@@ -187,25 +187,25 @@ const actionUndo = (n = 1) => {
 	while (n--) {
 		if (playedWords.length > 0) {
 			const word = playedWords.pop();
-			let tile, tileHover;
+			let tile, square;
 			for (let l = 0; l < word.tiles.length; ++l) {
 				tile = word.tiles[l];
-				tileHover = getHoveringTile(tile);
-				let stacked = +tileHover.dataset.stacked - 1;
+				square = getUnderlappingSquare(tile);
+				let stacked = +square.dataset.stacked - 1;
 				if (stacked === 0) {
-					resetBoardTile(tileHover, 60 * (word.tiles.length - l));
+					resetBoardSquare(square, 60 * (word.tiles.length - l));
 				} else {
 					if (word.hasClass('rotated')) {
-						tileHover.classList.remove('vertical');
-						tileHover.classList.remove('top');
-						tileHover.classList.remove('bottom');
+						square.classList.remove('vertical');
+						square.classList.remove('top');
+						square.classList.remove('bottom');
 					} else {
-						tileHover.classList.remove('horizontal');
-						tileHover.classList.remove('left');
-						tileHover.classList.remove('right');
+						square.classList.remove('horizontal');
+						square.classList.remove('left');
+						square.classList.remove('right');
 					}
 				}
-				tileHover.dataset.stacked = stacked;
+				square.dataset.stacked = stacked;
 			}
 			removePoints(word.points);
 			word.points = 0;
@@ -274,8 +274,8 @@ const restoreProgress = (progress) => {
 		
 		// Make sure the user didn't cheat
 		const letters = word.toUpperCase().split('');
-		const boardTiles = getBoardTileSeq(x, y, word.length, rotated);
-		if (boardTiles.every(everyTileMatchesLetters(letters)) === false)
+		const square = getBoardSquareSeq(x, y, word.length, rotated);
+		if (square.every(everySquareMatchesLetters(letters)) === false)
 			return null;
 		
 		const wordElem = wordElems.getWord(word);
@@ -293,36 +293,36 @@ const restoreProgress = (progress) => {
 		assignPointsToWord(wordElem);
 		acc += wordElem.points;
 		
-		boardTiles.forEach((boardTile, i) => {
+		boardSquares.forEach((square, i) => {
 			const letter = letters[i];
-			boardTile.dataset.letter = letter;
-			boardTile.dataset.points = LETTER_POINTS[letter];
+			square.dataset.letter = letter;
+			square.dataset.points = LETTER_POINTS[letter];
 			
-			boardTile.dataset.stacked = +(boardTile.dataset.stacked || 0) + 1;
+			square.dataset.stacked = +(square.dataset.stacked || 0) + 1;
 			
-			boardTile.classList.remove('wild');
-			boardTile.classList.remove('x-2-letter');
-			boardTile.classList.remove('x-3-letter');
-			boardTile.classList.remove('x-2-word');
-			boardTile.classList.remove('x-3-word');
+			square.classList.remove('wild');
+			square.classList.remove('x-2-letter');
+			square.classList.remove('x-3-letter');
+			square.classList.remove('x-2-word');
+			square.classList.remove('x-3-word');
 			
-			boardTile.classList.remove('no-letter');
+			square.classList.remove('no-letter');
 			
-			boardTile.classList.add('has-letter');
+			square.classList.add('has-letter');
 			
 			if (rotated) {
-				boardTile.classList.add('vertical');
+				square.classList.add('vertical');
 				if (i === 0) {
-					boardTile.classList.add('top');
+					square.classList.add('top');
 				} else if (i === word.length - 1) {
-					boardTile.classList.add('bottom');
+					square.classList.add('bottom');
 				}
 			} else {
-				boardTile.classList.add('horizontal');
+				square.classList.add('horizontal');
 				if (i === 0) {
-					boardTile.classList.add('left');
+					square.classList.add('left');
 				} else if (i === word.length - 1) {
-					boardTile.classList.add('right');
+					square.classList.add('right');
 				}
 			}
 		});
@@ -419,14 +419,14 @@ const initGrid = (body, progress) => {
 	);
 	
 	// Render board
-	const numTiles = boardSize * boardSize;
+	const numSquares = boardSize * boardSize;
 	if (RENDER_BOARD) {
 		grid = createGrid(boardSize);
 		
 		const centerPos = Math.floor(boardSize / 2);
-		for (let t = 0; t < numTiles; ++t) {
-			const _x = (t % boardSize);
-			const _y = Math.floor(t / boardSize);
+		for (let s = 0; s < numSquares; ++s) {
+			const _x = (s % boardSize);
+			const _y = Math.floor(s / boardSize);
 			const x = Math.abs(centerPos - _x);
 			const y = Math.abs(centerPos - _y);
 			const d = Math.abs(x - y);
@@ -449,10 +449,10 @@ const initGrid = (body, progress) => {
 			else if ((x === y) && (x === 1))
 				className = 'x-2-letter';
 		
-			const tile = createTile(null, _x, _y, className);
-			grid[_x][_y] = tile;
-			boardTiles.push(tile);
-			boardElem.append(tile);
+			const square = createSquare(null, _x, _y, className);
+			grid[_x][_y] = square;
+			boardSquares.push(square);
+			boardElem.append(square);
 		}
 	}
 	
@@ -472,23 +472,23 @@ const initGrid = (body, progress) => {
 	wordsElem.style.left = emLeft;
 	wordsElem.style.top = (boardWidth + 12) + `em`;
 	
-	const tileSize = (boardWidth - 3) / boardSize; // NOTE(bret): for that 1.5em padding yo
-	style.textContent = `.tile { width: ${tileSize}em; height: ${tileSize}em; }`;
+	const tileDim = (boardWidth - 3) / boardSize; // NOTE(bret): for that 1.5em padding yo
+	style.textContent = `.tile { width: ${tileDim}em; height: ${tileDim}em; }`;
 	colorStyle.textContent = '';
 	
 	const resizeBoard = () => {
 		// Resize the board
 		const navHeight = 9;
-		const tileSize = boardWidth / boardSize;
+		const squareDim = boardWidth / boardSize;
 		const ratio = window.innerWidth / window.innerHeight;
 		
 		const landscape = ratio > 1.25;
 		const [width, height] = (landscape) ? [
-			window.innerWidth / ((boardSize << 1) + 1.5) / tileSize,
-			window.innerHeight / (3.0 + boardSize) / tileSize
+			window.innerWidth / ((boardSize << 1) + 1.5) / squareDim,
+			window.innerHeight / (3.0 + boardSize) / squareDim
 		] : [
-			window.innerWidth / (boardSize + 0.5) / tileSize,
-			window.innerHeight / (navHeight + boardSize) / tileSize
+			window.innerWidth / (boardSize + 0.5) / squareDim,
+			window.innerHeight / (navHeight + boardSize) / squareDim
 		];
 		
 		const classNames = ['portrait', 'landscape'];
@@ -498,10 +498,10 @@ const initGrid = (body, progress) => {
 		const size = Math.min(width, height);
 		document.body.style.fontSize = (IS_FIREFOX) ? `${Math.floor(size)}px` : `${size}px`;
 		
-		// Update each tile's position
+		// Update each square's position
 		window.requestAnimationFrame(() => {
-			boardElem.q('.tile').each(tile => {
-				tile.pos = tile.getBoundingClientRect();
+			boardElem.q('.tile').each(square => {
+				square.pos = square.getBoundingClientRect();
 			});
 		});
 		
@@ -521,29 +521,29 @@ const initGrid = (body, progress) => {
 	grid = createGrid(boardSize);
 	
 	const centerPos = Math.floor(boardSize / 2);
-	for (let t = 0; t < numTiles; ++t) {
-		const _x = (t % boardSize);
-		const _y = Math.floor(t / boardSize);
+	for (let s = 0; s < numSquares; ++s) {
+		const _x = (s % boardSize);
+		const _y = Math.floor(s / boardSize);
 		const x = Math.abs(centerPos - _x);
 		const y = Math.abs(centerPos - _y);
 		
 		const speed = 0.04;
 		let delay = (x + y) * speed;
 		
-		const tile = getBoardTile(_x, _y);
-		if (tile.className.split(' ').length > 2)
+		const square = getBoardSquare(_x, _y);
+		if (square.className.split(' ').length > 2)
 			delay += 8 * speed;
-		if (tile.classList.contains('has-letter')) {
+		if (square.classList.contains('has-letter')) {
 			delay += 10 * speed;
 			setTimeout(() => {
-				tile.classList.add('stop-animate');
+				square.classList.add('stop-animate');
 			}, Math.ceil(delay * 1e3 + 400 + 200)); // 400 being how long the delay is, 200 for just extra padding
 		}
 		
 		// TODO(bret): Remove this animation delay at some point!
 		// TODO(bret): Figure out why this comment exists! :)
-		tile.style.animationDelay = tile.q('.background').style.animationDelay = `${delay}s`;
-		grid[_x][_y] = tile;
+		square.style.animationDelay = square.q('.background').style.animationDelay = `${delay}s`;
+		grid[_x][_y] = square;
 	}
 	
 	wordsElem.appendChild(wordsHolderElem);
@@ -906,6 +906,7 @@ const recycleTile = (tile) => {
 
 const getRecycledTile = () => {
 	const tile = recycledTiles.shift();
+	if (!tile) return;
 	
 	tile.className = 'tile';
 	
@@ -938,32 +939,34 @@ const createTile = (letter, x, y, className = '') => {
 	return tile;
 };
 
-const resetBoardTile = (tile, delay) => {
-	tile.style.animationDelay = `${delay}ms`;
-	tile.firstChild.style.transitionDelay = `0s`;
+const createSquare = createTile;
+
+const resetBoardSquare = (square, delay) => {
+	square.style.animationDelay = `${delay}ms`;
+	square.firstChild.style.transitionDelay = `0s`;
 	
-	tile.classList.remove('has-letter');
-	tile.classList.remove('stop-animate');
+	square.classList.remove('has-letter');
+	square.classList.remove('stop-animate');
 	
-	tile.classList.remove('horizontal');
-	tile.classList.remove('vertical');
+	square.classList.remove('horizontal');
+	square.classList.remove('vertical');
 	
-	tile.classList.remove('left');
-	tile.classList.remove('right');
-	tile.classList.remove('top');
-	tile.classList.remove('bottom');
+	square.classList.remove('left');
+	square.classList.remove('right');
+	square.classList.remove('top');
+	square.classList.remove('bottom');
 	
-	tile.classList.add('no-letter');
-	if (tile.dataset.type !== '')
-		tile.classList.add(tile.dataset.type);
+	square.classList.add('no-letter');
+	if (square.dataset.type !== '')
+		square.classList.add(square.dataset.type);
 	
-	tile.dataset.letter = '';
-	tile.dataset.points = '';
+	square.dataset.letter = '';
+	square.dataset.points = '';
 	
-	return tile;
+	return square;
 };
 
-const isTileOccupied = (letter, tile) => (tile.dataset.letter !== '');
+const isSquareOccupied = (square) => square.dataset.letter !== '';
 
 const setWordPos = (word, x, y, before = null, execIfNull = false) => {
 	window.requestAnimationFrame(() => {
@@ -1001,18 +1004,18 @@ const assignPointsToWord = (word) => {
 	let multiplier = 1;
 	let points = 0;
 	for (const tile of word.tiles) {
-		const hoverTile = getHoveringTile(tile);
-		hoverTile.dataset.letter = tile.dataset.letter;
-		hoverTile.dataset.points = tile.dataset.points;
-		let curPoints = +hoverTile.dataset.points;
+		const square = getUnderlappingSquare(tile);
+		square.dataset.letter = tile.dataset.letter;
+		square.dataset.points = tile.dataset.points;
+		let curPoints = +square.dataset.points;
 		
-		if (hoverTile.hasClass('x-2-letter'))
+		if (square.hasClass('x-2-letter'))
 			curPoints *= 2;
-		if (hoverTile.hasClass('x-3-letter'))
+		if (square.hasClass('x-3-letter'))
 			curPoints *= 3;
-		if (hoverTile.hasClass('x-2-word'))
+		if (square.hasClass('x-2-word'))
 			multiplier *= 2;
-		if (hoverTile.hasClass('x-3-word'))
+		if (square.hasClass('x-3-word'))
 			multiplier *= 3;
 		
 		points += curPoints;
@@ -1052,7 +1055,7 @@ const animateWordIntoBoard = (word) => {
 			});
 			
 			const delayStr = `${t * delay / 1000}s`;
-			const gridTile = getHoveringTile(tile);
+			const gridTile = getUnderlappingSquare(tile);
 			gridTile.dataset.stacked = 1 + +(gridTile.dataset.stacked || 0);
 			gridTile.firstChild.style.transitionDelay = `${delayStr}, ${delayStr}, ${delayStr}, ${delayStr}`;
 			gridTile.classList.remove('no-letter');
@@ -1084,7 +1087,7 @@ const animateWordIntoBoard = (word) => {
 const alignWithGrid = (word, instant = false) => {
 	const startPos = word.getBoundingClientRect();
 	word.pos.x = word.pos.y = 0;
-	const firstTile = getHoveringTile(word);
+	const firstTile = getUnderlappingSquare(word);
 	const dx = startPos.x - firstTile.pos.x;
 	const dy = startPos.y - firstTile.pos.y;
 	if (instant) {
@@ -1113,16 +1116,16 @@ const alignWithGrid = (word, instant = false) => {
 
 const assignToGrid = (word) => {
 	for (const tile of word.tiles) {
-		const hoverTile = getHoveringTile(tile);
+		const square = getUnderlappingSquare(tile);
 		
-		hoverTile.classList.remove('wild');
-		hoverTile.classList.remove('x-2-letter');
-		hoverTile.classList.remove('x-3-letter');
-		hoverTile.classList.remove('x-2-word');
-		hoverTile.classList.remove('x-3-word');
+		square.classList.remove('wild');
+		square.classList.remove('x-2-letter');
+		square.classList.remove('x-3-letter');
+		square.classList.remove('x-2-word');
+		square.classList.remove('x-3-word');
 		
-		hoverTile.classList.add('has-letter');
-		hoverTile.classList.add('stop-animate');
+		square.classList.add('has-letter');
+		square.classList.add('stop-animate');
 	};
 };
 
@@ -1289,18 +1292,18 @@ const onWordDrag = (word, mx, my) => {
 	// TODO(bret): We could keep a changelog of these and apply those changes at the end instead of doing so many DOM manipulations - dunno if that has a performance cost
 	let x, y;
 	let hasWild = false;
-	for (const boardTile of boardTiles) {
-		boardTile.classList.remove('word-hovering');
-		boardTile.classList.remove('invalid');
+	for (const square of boardSquares) {
+		square.classList.remove('word-hovering');
+		square.classList.remove('invalid');
 	}
 	
 	const boardX = boardRect.x;
 	const boardY = boardRect.y;
 	const tileSize = boardRect.width / boardSize;
 	
-	let boardTile;
+	let square;
 	let success = true;
-	const overlappedTiles = []; // TODO(bret): Cache this on resize
+	const tileSquarePairs = []; // TODO(bret): Cache this on resize
 	for (const tile of word.tiles) {
 		x = Math.floor((tile.center.x + dragPos.x - boardX) / tileSize);
 		y = Math.floor((tile.center.y + dragPos.y - boardY) / tileSize);
@@ -1308,29 +1311,29 @@ const onWordDrag = (word, mx, my) => {
 		tile.dataset.x = x;
 		tile.dataset.y = y;
 		
-		boardTile = getBoardTile(x, y);
-		if (boardTile === null) break;
+		square = getBoardSquare(x, y);
+		if (square === null) break;
 		
-		if (boardTile.dataset.type === 'wild')
+		if (square.dataset.type === 'wild')
 			hasWild = true;
 		
-		overlappedTiles.push([ tile, boardTile ]);
+		tileSquarePairs.push([ tile, square ]);
 	}
 	
 	word.dataset.x = word.tiles[0].dataset.x;
 	word.dataset.y = word.tiles[0].dataset.y;
 	
-	dragWordValidPlacement = (overlappedTiles.length === word.tiles.length);
+	dragWordValidPlacement = (tileSquarePairs.length === word.tiles.length);
 	
 	let isOccupied = false;
-	for (const [tile, boardTile] of overlappedTiles) {
-		boardTile.classList.add('word-hovering');
-		if (isTileOccupied(tile, boardTile)) {
-			if (boardTile.dataset.letter === tile.dataset.letter) {
+	for (const [tile, square] of tileSquarePairs) {
+		square.classList.add('word-hovering');
+		if (isSquareOccupied(square)) {
+			if (square.dataset.letter === tile.dataset.letter) {
 				isOccupied = true;
 			} else {
 				dragWordValidPlacement = false;
-				boardTile.classList.add('invalid');
+				square.classList.add('invalid');
 			}
 		}
 	}
@@ -1338,9 +1341,9 @@ const onWordDrag = (word, mx, my) => {
 	dragWordValidPlacement = (dragWordValidPlacement && (hasWild || isOccupied));
 	
 	if (!dragWordValidPlacement) {
-		for (const [tile, boardTile] of overlappedTiles) {
-			if (!isTileOccupied(tile, boardTile))
-				boardTile.classList.add('invalid');
+		for (const [tile, square] of tileSquarePairs) {
+			if (!isSquareOccupied(square))
+				square.classList.add('invalid');
 		}
 	}
 };
@@ -1354,8 +1357,8 @@ const endWordDrag = (word, instant = false) => {
 	
 	dragWord = null;
 	
-	for (const tile of boardTiles)
-		tile.classList.remove('word-hovering');
+	for (const square of boardSquares)
+		square.classList.remove('word-hovering');
 };
 
 const wordElems = [];
