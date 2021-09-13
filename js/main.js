@@ -301,13 +301,7 @@ const clearProgress = () => {
 	localStorage.removeItem('progress');
 };
 
-const restoreProgress = (progress) => {
-	if (progress === null) return;
-	
-	const { wordsOnBoard } = progress;
-	
-	if (wordsOnBoard.length === 0) return;
-	
+const restorePlayedWords = (wordsOnBoard) => {
 	const {
 		word,
 		tileCoord,
@@ -590,12 +584,19 @@ const initGrid = (body, progress) => {
 	
 	wordsHolderElem = $new('.words-holder').element();
 	
+	const {
+		words = dictionary,
+		wordsOnBoard = []
+	} = progress || {};
+	
 	// TODO(bret): Create an animation for these (probably set that up _after_ we've removed words based on wordsOnBoard (make these words animate in AFTER the progress words have been animated!)
 	// TODO(bret): Perhaps he meant an animation of the words on the side?
-	shuffle(dictionary).forEach(addWord);
+	shuffle(words).forEach(addWord);
 	
-	restoreProgress(progress);
+	if (wordsOnBoard.length > 0)
+		restorePlayedWords(wordsOnBoard);
 	
+	// Create the DOM grid
 	grid = createGrid(boardSize);
 	
 	const centerPos = Math.floor(boardSize / 2);
@@ -1090,6 +1091,13 @@ const saveGame = () => {
 	}));
 };
 
+const checkGameOver = () => {
+	let canPlay = true;
+	if (words.length === 0) {
+		
+	}
+};
+
 const playedWords = [];
 const removeWord = (word) => {
 	word.remove();
@@ -1175,6 +1183,7 @@ const animateWordIntoBoard = (word) => {
 			assignToGrid(word);
 			removeWord(word);
 			saveGame();
+			checkGameOver();
 			word.classList.remove('on-grid');
 		}, duration + tiles.length * delay);
 	}, 100);
