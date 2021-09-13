@@ -13,6 +13,11 @@ const IS_WEBKIT = (IS_CHROME || IS_SAFARI || IS_OPERA);
 const IS_MSIE = (/\b(?:MSIE|Trident)\b/i.test(userAgent));
 const IS_EDGE = (userAgent.indexOf("Edge") != -1);
 
+Array.prototype.remove = function(val) {
+    const index = this.indexOf(val);
+    return (index > -1) ? this.splice(index, 1) : undefined;
+};
+
 String.prototype.toTitleCase = function() {
 	return this.split(' ').map(v => v.substring(0, 1).toUpperCase() + v.substring(1).toLowerCase()).join(' ');
 };
@@ -57,7 +62,7 @@ const getBoardSquareCol = (x, y, n) => Array.from({ length: n }, (_, i) => getBo
 
 const getBoardSquareSeq = (x, y, n, rotated) => ((rotated) ? getBoardSquareCol : getBoardSquareRow)(x, y, n);
 
-const everySquareMatchesLetters = (letters) => (tile, i) => (!tile.dataset.letter) || (tile.dataset.letter === letters[i]);
+const everySquareMatchesLetters = (letters) => (tile, i) => (tile !== null) && ((!tile.dataset.letter) || (tile.dataset.letter === letters[i]));
 
 const everySquareMatchesWord = (word) => everySquareMatchesLetters(word.toUpperCase().split(''));
 
@@ -191,6 +196,9 @@ const actionUndo = (n = 1) => {
 			for (let l = 0; l < word.tiles.length; ++l) {
 				tile = word.tiles[l];
 				square = getUnderlappingSquare(tile);
+				
+				playedTiles[square.dataset.letter].remove(square);
+				
 				let stacked = +square.dataset.stacked - 1;
 				if (stacked === 0) {
 					resetBoardSquare(square, 60 * (word.tiles.length - l));
@@ -289,6 +297,8 @@ const restorePlayedWords = (wordsOnBoard) => {
 		
 		squares.forEach((square, i) => {
 			const letter = letters[i];
+			playedTiles[letter].push(square);
+			
 			square.dataset.letter = letter;
 			square.dataset.points = LETTER_POINTS[letter];
 			
@@ -333,6 +343,8 @@ const restorePlayedWords = (wordsOnBoard) => {
 	}
 	
 	addPoints(totalPoints);
+	
+	checkGameOver();
 };
 
 const initGrid = (body, progress) => {
@@ -994,13 +1006,40 @@ const saveGame = () => {
 };
 
 const checkGameOver = () => {
-	let canPlay = true;
-	if (words.length === 0) {
+	let words = wordsHolderElem.q('.word');
+	if (HTMLCollection.prototype.isPrototypeOf(words))
+		words = [...words];
+	else
+		words = [words];
+	
+	let hasMovesLeft = (playedWords.length === 0);
+	if ((hasMovesLeft === false) && (words.length > 0)) {
+		let x, y;
 		
+		hasMovesLeft = words.some(word => {
+			const letters = word.dataset.word.split('');
+			
+			return word.tiles.some((tile, t) => {
+				const { letter } = tile.dataset;
+				
+				return playedTiles[letter].some(letterElem => {
+					x = +letterElem.dataset.x;
+					y = +letterElem.dataset.y;
+					
+					return [
+						getBoardSquareSeq(x - t, y, word.tiles.length, false),
+						getBoardSquareSeq(x, y - t, word.tiles.length, true)
+					].some(squares => squares.every(everySquareMatchesLetters(letters)));
+				});
+			});
+		});
 	}
+	
+	return !hasMovesLeft;
 };
 
 const playedWords = [];
+const playedTiles = Object.keys(LETTER_POINTS).reduce((acc, val) => (acc[val] = [], acc), {});
 const removeWord = (word) => {
 	word.remove();
 	playedWords.push(word);
@@ -1124,6 +1163,9 @@ const alignWithGrid = (word, instant = false) => {
 const assignToGrid = (word) => {
 	for (const tile of word.tiles) {
 		const square = getUnderlappingSquare(tile);
+		
+		const { letter } = tile.dataset;
+		playedTiles[letter].push(square);
 		
 		square.classList.remove('wild');
 		square.classList.remove('x-2-letter');
