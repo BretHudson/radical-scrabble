@@ -69,7 +69,7 @@ const isTileSeqIntersectingCenter = (x, y, n, rotated, boardSize) => {
 	return (span <= center && span + n > center) && (axis === center);
 };
 
-const version = '0.3.1';
+const version = '0.3.2';
 
 const RENDER_BOARD = true;
 
@@ -341,7 +341,7 @@ const restoreProgress = (progress) => {
 		return;
 	}
 	
-	const totalPoints2 = wordsOnBoard.reduce((acc, w) => {
+	const totalPoints = wordsOnBoard.reduce((acc, w) => {
 		if (acc === null) return acc;
 		
 		const {
@@ -354,8 +354,8 @@ const restoreProgress = (progress) => {
 		
 		// Make sure the user didn't cheat
 		const letters = word.toUpperCase().split('');
-		const square = getBoardSquareSeq(x, y, word.length, rotated);
-		if (square.every(everySquareMatchesLetters(letters)) === false)
+		const squares = getBoardSquareSeq(x, y, word.length, rotated);
+		if (squares.every(everySquareMatchesLetters(letters)) === false)
 			return null;
 		
 		const wordElem = wordElems.getWord(word);
@@ -373,7 +373,7 @@ const restoreProgress = (progress) => {
 		assignPointsToWord(wordElem);
 		acc += wordElem.points;
 		
-		boardSquares.forEach((square, i) => {
+		squares.forEach((square, i) => {
 			const letter = letters[i];
 			square.dataset.letter = letter;
 			square.dataset.points = LETTER_POINTS[letter];
@@ -411,8 +411,6 @@ const restoreProgress = (progress) => {
 		
 		return acc;
 	}, 0);
-	
-	const totalPoints = null;
 	
 	if (totalPoints === null) {
 		actionUndo(playedWords.length);
